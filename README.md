@@ -1,6 +1,6 @@
 # SIH26019 — National Land Governance Research & Policy Innovation Platform
 
-[![CI](https://github.com/sih26019/platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sih26019/platform/actions/workflows/ci.yml)
+[![CI](https://github.com/samRookie/BlueTrace_soloMade/actions/workflows/ci.yml/badge.svg)](https://github.com/samRookie/BlueTrace_soloMade/actions/workflows/ci.yml)
 [![Architecture Version](https://img.shields.io/badge/Architecture%20Version-1.0-blue.svg)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.15.4-orange.svg)](https://pnpm.io/)
