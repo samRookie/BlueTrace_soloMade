@@ -18,7 +18,8 @@
     "test": "vitest run",
     "db:migrate": "pnpm --filter @sih26019/db db:migrate",
     "db:migrate:status": "pnpm --filter @sih26019/db db:migrate:status",
-    "db:seed": "pnpm --filter @sih26019/db db:seed"
+    "db:seed": "pnpm --filter @sih26019/db db:seed",
+    "db:reset": "pnpm --filter @sih26019/db db:reset"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

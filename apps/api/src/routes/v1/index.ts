@@ -2,11 +2,15 @@ import { Router, type Request, type Response } from 'express';
 import { createRequire } from 'node:module';
 import { ARCHITECTURE_VERSION } from '@sih26019/shared-types';
 import { createSuccessResponse } from '../../utils/response.js';
+import { devRouter } from './dev.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
 
 export const v1Router: Router = Router();
+
+// Mount development diagnostic routes
+v1Router.use('/dev', devRouter);
 
 /**
  * GET /api/v1/health

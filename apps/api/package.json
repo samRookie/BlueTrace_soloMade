@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@sih26019/config": "workspace:*",
+    "@sih26019/db": "workspace:*",
     "@sih26019/shared-types": "workspace:*",
     "@sih26019/validation": "workspace:*",
     "cors": "^2.8.5",

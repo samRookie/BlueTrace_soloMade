@@ -11,26 +11,25 @@ The **National Land Governance Research & Policy Innovation Platform (SIH26019)*
 
 ---
 
-## Current Status: Phase 1 (Shared Domain Contracts)
+## Current Status: Phase 2 (PostgreSQL Evidence Graph & Deterministic Development Data)
 
-> **Phase 1 — Shared Domain Contracts & Architecture Foundation**  
+> **Phase 2 — PostgreSQL Persistence Layer & Evidence Graph**  
 > **Architecture Version: 1.0**  
-> Status: **Under Active Development / Shared Contracts Foundation Established**
+> Status: **Persistence Foundation & Deterministic Seed Graph Established**
 
-Phase 1 establishes the shared domain contract layer, DTOs, validation schemas, API response envelopes, error conventions, evidence relationship semantics, role vocabularies, provider adapter interfaces, and typed API client foundations.
+Phase 2 establishes the real PostgreSQL schema, Drizzle ORM migrations, foreign-key relationships, indexes, check constraints, base data-access utilities, development data-status diagnostics, and a connected synthetic coastal/mangrove demonstration evidence graph (`sampleFlag = true`).
 
-### Phase 1 Scope Boundaries
+### Phase 2 Scope Boundaries
 
-This phase explicitly **does NOT contain business implementations or migrations**. The following capabilities remain reserved for future phases:
+This phase explicitly **does NOT contain business dashboards or full service workflows**. The following capabilities remain reserved for future phases:
 
 - ❌ Authentication / Authorization Enforcement / Session Management
-- ❌ Land Record Repositories & Business Database Tables
-- ❌ Dashboards & Business Visualizations
-- ❌ GIS / Spatial Engines / Map Processing (GISAdapter is an interface only)
-- ❌ Blue Carbon & Environmental Metric Calculations
-- ❌ AI / LLM / Policy Recommendation Engines (AIAdapter is an interface only)
+- ❌ Dashboards & UI Exploration Modules
+- ❌ GIS Rendering Engines / Shapefile Processors (GIS layers are metadata-only)
+- ❌ Blue Carbon Scientific Equations / Automated Carbon Accounting
+- ❌ AI / LLM / Policy Recommendation Engines
 - ❌ External Government Integrations
-- ❌ Mock Business Datasets & Fake Domain Records
+- ❌ Real-Person Data / Identifiable Landowner Records
 
 ---
 
@@ -39,7 +38,7 @@ This phase explicitly **does NOT contain business implementations or migrations*
 ```text
 /
 ├── apps/
-│   ├── api/                 # Express HTTP API service (/health, /api/v1) & error mapping
+│   ├── api/                 # Express HTTP API service (/health, /api/v1, /api/v1/dev)
 │   └── web/                 # React 19 + Vite accessible landing page & typed client
 │
 ├── packages/
@@ -48,12 +47,12 @@ This phase explicitly **does NOT contain business implementations or migrations*
 │   └── config/              # Centralized environment parsing & validation
 │
 ├── db/
-│   ├── migrations/          # SQL migrations directory (0 business tables)
-│   ├── seeds/               # Database seed scaffolding (0 business records)
-│   └── src/                 # Drizzle ORM schema & client initialization
+│   ├── migrations/          # SQL migrations directory (15 relational domain tables)
+│   ├── seeds/               # Deterministic coastal/mangrove seed factories & datasets
+│   └── src/                 # Drizzle ORM schema, client, & repository base utilities
 │
-├── docs/                    # Architecture, contracts, environment, testing, boundary docs
-├── scripts/                 # Monorepo maintenance and migration utility scripts
+├── docs/                    # Architecture, schema, contracts, testing, boundary docs
+├── scripts/                 # Monorepo maintenance, migration, and reset utility scripts
 ├── .github/workflows/       # Continuous Integration workflows
 ├── .env.example             # Safe environment variable configuration template
 ├── pnpm-workspace.yaml      # pnpm workspace definition
@@ -69,6 +68,7 @@ Ensure the following tools are installed on your workstation:
 
 - **Node.js**: `v20.0.0` or higher (tested on Node `v22.x` and `v25.x`)
 - **pnpm**: `v9.0.0` or higher (tested on pnpm `v9.15.4`)
+- **PostgreSQL**: `v14+` or `v16+` (for live database connections; automated tests run against embedded in-process Postgres via `@electric-sql/pglite`)
 
 ---
 
@@ -115,65 +115,39 @@ pnpm --filter @sih26019/web dev
 pnpm --filter @sih26019/api dev
 ```
 
-### Health Check Endpoint
+### Diagnostic & Health Endpoints
 
 When the API service is running, verify its status:
 
 ```bash
+# Standard health check
 curl http://localhost:3001/health
-```
 
-Expected JSON response:
-
-```json
-{
-  "status": "ok",
-  "service": "api",
-  "version": "0.1.0",
-  "architectureVersion": "1.0"
-}
-```
-
-Or query the versioned `/api/v1` namespace:
-
-```bash
+# Versioned API namespace
 curl http://localhost:3001/api/v1/health
+
+# Development diagnostic data-status (gated against production)
+curl http://localhost:3001/api/v1/dev/data-status
 ```
 
 ---
 
-## API Response Envelope Conventions
+## Database Commands
 
-### Success Envelope
+Database tooling is powered by Drizzle ORM, node-postgres, and PGLite:
 
-```json
-{
-  "success": true,
-  "data": {
-    "key": "value"
-  },
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "timestamp": "2026-08-31T12:00:00.000Z"
-  }
-}
-```
+```bash
+# Check local migration files and readiness
+pnpm db:migrate:status
 
-### Error Envelope
+# Run migrations against DATABASE_URL
+pnpm db:migrate
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Request validation failed.",
-    "details": {
-      "sourceId": ["sourceId is required"]
-    }
-  }
-}
+# Seed deterministic coastal/mangrove demonstration dataset
+pnpm db:seed
+
+# Safely reset development database (recreate schema + migrate + seed)
+pnpm db:reset
 ```
 
 ---
@@ -195,7 +169,7 @@ pnpm format:check
 # Auto-format all code
 pnpm format
 
-# Run all automated tests (Vitest)
+# Run all automated tests (Vitest, 53 tests across 10 suites)
 pnpm test
 
 # Build all packages and applications for production
@@ -204,27 +178,11 @@ pnpm build
 
 ---
 
-## Database Commands
-
-Database tooling is powered by Drizzle ORM and node-postgres:
-
-```bash
-# Check local migration files and readiness
-pnpm db:migrate:status
-
-# Run migrations against DATABASE_URL
-pnpm db:migrate
-
-# Run seed scaffolding (Phase 1 contains zero business records)
-pnpm db:seed
-```
-
----
-
 ## Documentation
 
 Detailed documentation is available in the [`docs/`](./docs/) directory:
 
+- [`docs/database-schema.md`](./docs/database-schema.md) — PostgreSQL entity inventory, constraints, indexes, and seed graph
 - [`docs/contracts.md`](./docs/contracts.md) — Shared domain contracts, vocabulary, and provider interfaces
 - [`docs/architecture.md`](./docs/architecture.md) — Monorepo design, layer diagrams, and package boundaries
 - [`docs/development.md`](./docs/development.md) — Local developer setup and workflows

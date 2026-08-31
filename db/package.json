@@ -28,17 +28,22 @@
     "build": "tsc",
     "db:migrate": "tsx ../scripts/migrate.ts",
     "db:migrate:status": "tsx ../scripts/migrate-status.ts",
-    "db:seed": "tsx ./seeds/index.ts"
+    "db:seed": "tsx ./seeds/index.ts",
+    "db:reset": "tsx ../scripts/reset.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@sih26019/config": "workspace:*",
+    "@sih26019/shared-types": "workspace:*",
     "drizzle-orm": "^0.38.4",
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.2.16",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
   }
 }

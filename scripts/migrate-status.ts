@@ -23,9 +23,7 @@ function checkMigrationStatus(): void {
 
   console.log(`[Migration Status] Local migration files detected: ${migrationFiles.length}`);
   if (migrationFiles.length === 0) {
-    console.log(
-      '[Migration Status] Phase 0 baseline: 0 migrations pending / 0 applied. Status: Clean.',
-    );
+    console.log('[Migration Status] No migration files found.');
   } else {
     migrationFiles.forEach((file, idx) => {
       console.log(`  ${idx + 1}. ${file}`);

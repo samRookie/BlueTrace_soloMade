@@ -1,15 +1,18 @@
-# Database Tooling & Migrations — Phase 0
+# Database Architecture, Tooling & Persistence — Phase 2
 
 ## Database Foundation Overview
 
-In Phase 0, the database layer provides tooling, configuration, and migration structure with **zero business tables**.
+In Phase 2, the persistence layer provides a real PostgreSQL schema and traversable evidence graph for the **National Land Governance Research & Policy Innovation Platform (SIH26019)**.
+
+Refer to [`docs/database-schema.md`](./database-schema.md) for full entity and relational graph definitions.
 
 ## Database Package (`@sih26019/db`)
 
-- **ORM / Tooling**: Drizzle ORM + Drizzle Kit + `pg` (node-postgres).
+- **ORM / Tooling**: Drizzle ORM + Drizzle Kit + `pg` (node-postgres) + `@electric-sql/pglite` (for test isolation).
 - **Schema Location**: `db/src/schema.ts`
 - **Migrations Location**: `db/migrations/`
-- **Seed Scaffolding**: `db/seeds/index.ts`
+- **Seed Scaffolding**: `db/seeds/`
+- **Base Utilities**: `db/src/repositories/base.ts`
 
 ## Database Commands
 
@@ -19,7 +22,7 @@ In Phase 0, the database layer provides tooling, configuration, and migration st
 pnpm db:migrate:status
 ```
 
-Inspects `db/migrations/` and displays the count of local migration files. In Phase 0, 0 migration files are present.
+Inspects `db/migrations/` and displays the count of local migration files.
 
 ### Running Migrations
 
@@ -27,7 +30,7 @@ Inspects `db/migrations/` and displays the count of local migration files. In Ph
 pnpm db:migrate
 ```
 
-Runs any `.sql` migrations in `db/migrations/` against the configured `DATABASE_URL`.
+Applies all pending `.sql` migrations in `db/migrations/` to the database configured via `DATABASE_URL`.
 
 ### Running Seeds
 
@@ -35,12 +38,12 @@ Runs any `.sql` migrations in `db/migrations/` against the configured `DATABASE_
 pnpm db:seed
 ```
 
-Executes the seed scaffolding script. In Phase 0, zero business records are seeded.
+Seeds the deterministic coastal/mangrove sample graph (`sampleFlag = true`).
 
-## Adding Future Migrations
+### Resetting Development Database
 
-In future development phases:
+```bash
+pnpm db:reset
+```
 
-1. Define table schemas in `db/src/schema.ts`.
-2. Generate migration SQL files using `drizzle-kit generate`.
-3. Apply migrations using `pnpm db:migrate`.
+Safely drops the development schema, runs all migrations from scratch, and seeds the deterministic demonstration graph. Gated against production environments.
