@@ -43,7 +43,7 @@ describe('Web Application - Auth Components', () => {
     });
   });
 
-  it('renders DemoAccountSelector with 8 persona buttons', () => {
+  it('renders DemoAccountSelector with 8 persona buttons', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -57,17 +57,19 @@ describe('Web Application - Auth Components', () => {
       </AuthProvider>,
     );
 
-    expect(screen.getByText(/Admin User/i)).toBeInTheDocument();
-    expect(screen.getByText(/Dr. Priya Sharma/i)).toBeInTheDocument();
-    expect(screen.getByText(/Dr. Anand Rao/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sunita Patel/i)).toBeInTheDocument();
-    expect(screen.getByText(/Marcus Chen/i)).toBeInTheDocument();
-    expect(screen.getByText(/K. Someswara Rao/i)).toBeInTheDocument();
-    expect(screen.getByText(/Justice R. Murthy/i)).toBeInTheDocument();
-    expect(screen.getByText(/Citizen Observer/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Admin User/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dr. Priya Sharma/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dr. Anand Rao/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sunita Patel/i)).toBeInTheDocument();
+      expect(screen.getByText(/Marcus Chen/i)).toBeInTheDocument();
+      expect(screen.getByText(/K. Someswara Rao/i)).toBeInTheDocument();
+      expect(screen.getByText(/Justice R. Murthy/i)).toBeInTheDocument();
+      expect(screen.getByText(/Citizen Observer/i)).toBeInTheDocument();
+    });
   });
 
-  it('renders PermissionDenied notice with 403 Forbidden message', () => {
+  it('renders PermissionDenied notice with 403 Forbidden message', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -81,8 +83,10 @@ describe('Web Application - Auth Components', () => {
       </AuthProvider>,
     );
 
-    expect(screen.getByText(/Access Restricted \(403 Forbidden\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/modify policy guidelines/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Access Restricted \(403 Forbidden\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/modify policy guidelines/i)).toBeInTheDocument();
+    });
   });
 
   it('executes login flow and updates authenticated context state', async () => {
