@@ -2,17 +2,26 @@
 node_modules/
 .pnpm-store/
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
+*.pem
+*.key
+*.crt
 
-# Build Outputs
+# Build & Cache Outputs
 dist/
 build/
 out/
 .drizzle/
+.vite/
+.turbo/
+*.tsbuildinfo
 
 # Logs
 *.log
@@ -20,11 +29,12 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Coverage / Testing
+# Coverage & Testing
 coverage/
 .nyc_output/
+.vitest/
 
-# IDE / OS Artifacts
+# IDE & OS Artifacts
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
