@@ -1,0 +1,461 @@
+openapi: 3.1.0
+info:
+  title: SIH26019 - National Land Governance Research & Policy Innovation Platform API
+  description: Canonical HTTP execution layer and backend architecture for the SIH26019 platform.
+  version: 0.1.0
+servers:
+  - url: http://localhost:3001
+    description: Local Development Server
+
+paths:
+  /health:
+    get:
+      summary: Base Application Health Check
+      description: Returns service availability status and architecture version baseline.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+
+  /api/v1/health:
+    get:
+      summary: Versioned API Health Check
+      description: Returns health status wrapped in the standard API response envelope with request ID.
+      responses:
+        '200':
+          description: Successful health check
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Health'
+
+  /api/v1/version:
+    get:
+      summary: API Version & Environment
+      description: Returns current API version, architecture version, and runtime environment.
+      responses:
+        '200':
+          description: Version information
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Version'
+
+  /api/v1/regions:
+    get:
+      summary: List Administrative Regions
+      description: Retrieves a paginated list of regions with optional filtering by administrative level and name/code search.
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page (maximum 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: level
+          in: query
+          description: Administrative hierarchy level filter
+          schema:
+            $ref: '#/components/schemas/RegionLevel'
+        - name: search
+          in: query
+          description: Search term matching region name or code
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: Paginated collection of regions
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_PaginatedRegions'
+        '400':
+          $ref: '#/components/responses/400ValidationError'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+
+  /api/v1/regions/{id}:
+    get:
+      summary: Get Region by ID
+      description: Retrieves a single region record by primary key identifier.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Region unique ID (e.g. SAMPLE-REG-KR-001)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+      responses:
+        '200':
+          description: Region details
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Region'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+
+  /api/v1/resources/counts:
+    get:
+      summary: Get Categorized Entity Counts
+      description: Returns aggregate counts across all domain entities in the persistent evidence graph.
+      responses:
+        '200':
+          description: Entity count summary
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_ResourceCounts'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+
+  /api/v1/dev/data-status:
+    get:
+      summary: Development Data Status Diagnostics
+      description: Development-only diagnostic endpoint reporting database connectivity and seeded sample graph status.
+      responses:
+        '200':
+          description: Development data diagnostics
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_DataStatus'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '500':
+          $ref: '#/components/responses/500InternalError'
+
+components:
+  headers:
+    X-Request-ID:
+      description: Unique UUID request correlation identifier
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    400ValidationError:
+      description: Request validation failed
+      headers:
+        x-request-id:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+    403Forbidden:
+      description: Action or diagnostic endpoint is forbidden in current environment
+      headers:
+        x-request-id:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+    404NotFound:
+      description: Target resource was not found
+      headers:
+        x-request-id:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+    500InternalError:
+      description: Sanitized internal server error
+      headers:
+        x-request-id:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+  schemas:
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - service
+        - version
+        - architectureVersion
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: api
+        version:
+          type: string
+          example: 0.1.0
+        architectureVersion:
+          type: string
+          example: '1.0'
+
+    RegionLevel:
+      type: string
+      enum:
+        - COUNTRY
+        - STATE
+        - DISTRICT
+        - SUB_DISTRICT
+        - LOCAL
+
+    RegionDto:
+      type: object
+      required:
+        - id
+        - code
+        - name
+        - level
+        - sampleFlag
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: SAMPLE-REG-KR-001
+        code:
+          type: string
+          example: IN-AP-CORINGA
+        name:
+          type: string
+          example: Coringa Mangrove Estuarine Zone
+        level:
+          $ref: '#/components/schemas/RegionLevel'
+        parentCode:
+          type: string
+          nullable: true
+        sampleFlag:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 1
+
+    ApiMetadata:
+      type: object
+      properties:
+        requestId:
+          type: string
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiErrorDetails:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Request validation failed.
+        details:
+          type: object
+
+    ApiErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          $ref: '#/components/schemas/ApiErrorDetails'
+        requestId:
+          type: string
+
+    ApiSuccessResponse_Health:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/HealthCheckResponse'
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Version:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            version:
+              type: string
+            architectureVersion:
+              type: string
+            environment:
+              type: string
+            status:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_PaginatedRegions:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - items
+            - pagination
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/RegionDto'
+            pagination:
+              $ref: '#/components/schemas/PaginationMeta'
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Region:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/RegionDto'
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_ResourceCounts:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            categories:
+              type: object
+            totalEntities:
+              type: integer
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_DataStatus:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            database:
+              type: object
+            sampleDataSeeded:
+              type: boolean
+            counts:
+              type: object
+            architectureVersion:
+              type: string
+            environment:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'

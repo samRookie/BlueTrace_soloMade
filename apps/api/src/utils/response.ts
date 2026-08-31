@@ -23,6 +23,7 @@ export function createErrorResponse(
   code: ApiErrorCode,
   message: string,
   details?: unknown,
+  requestId?: string,
 ): ApiErrorResponse {
   return {
     success: false,
@@ -31,5 +32,6 @@ export function createErrorResponse(
       message,
       ...(details !== undefined ? { details } : {}),
     },
+    ...(requestId ? { requestId } : {}),
   };
 }

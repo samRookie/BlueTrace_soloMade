@@ -19,6 +19,7 @@
     "@sih26019/shared-types": "workspace:*",
     "@sih26019/validation": "workspace:*",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.38.4",
     "express": "^4.21.2"
   },
   "devDependencies": {

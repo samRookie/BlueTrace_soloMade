@@ -1,4 +1,5 @@
 import type { IsoTimestamp } from './timestamp.js';
+import type { RegionLevel } from './region.js';
 
 /**
  * Standard error codes across platform APIs.
@@ -23,9 +24,44 @@ export interface ApiErrorDetails {
 }
 
 /**
- * Pagination and contextual metadata for API responses.
+ * Pagination query parameters accepted by list endpoints.
+ */
+export interface PaginationQuery {
+  page?: number;
+  pageSize?: number;
+}
+
+/**
+ * Pagination metadata included in paginated response data.
+ */
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+/**
+ * Standard paginated collection data structure.
+ */
+export interface PaginatedData<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
+/**
+ * Filter query parameters for regions list endpoint.
+ */
+export interface RegionFilterQuery extends PaginationQuery {
+  level?: RegionLevel;
+  search?: string;
+}
+
+/**
+ * Contextual metadata for API responses.
  */
 export interface ApiMetadata {
+  requestId?: string;
   page?: number;
   limit?: number;
   total?: number;
@@ -47,6 +83,7 @@ export interface ApiSuccessResponse<T = unknown> {
 export interface ApiErrorResponse {
   success: false;
   error: ApiErrorDetails;
+  requestId?: string;
 }
 
 /**

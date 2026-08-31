@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchApi } from '../src/api/client.js';
+import {
+  fetchApi,
+  getRegions,
+  getRegionById,
+  getResourceCounts,
+  getDataStatus,
+  getHealth,
+  ApiClientError,
+  NetworkError,
+} from '../src/api/client.js';
 import {
   getLifecycleStatusLabel,
   getIntegrityStatusLabel,
@@ -41,6 +50,98 @@ describe('Web Application - Typed API Client & Presenters', () => {
         expect(result.error.code).toBe('INTERNAL_ERROR');
         expect(result.error.message).toBe('Network disconnected');
       }
+    });
+  });
+
+  describe('Typed Client Helpers', () => {
+    it('constructs correct query string in getRegions', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { items: [], pagination: { page: 2, pageSize: 10, total: 0, totalPages: 0 } },
+        }),
+      } as unknown as Response);
+
+      await getRegions({ page: 2, pageSize: 10, level: 'DISTRICT', search: 'Coringa' });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/v1/regions?page=2&pageSize=10&level=DISTRICT&search=Coringa',
+        expect.any(Object),
+      );
+    });
+
+    it('encodes region ID correctly in getRegionById', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { id: 'SAMPLE-REG-KR-001' },
+        }),
+      } as unknown as Response);
+
+      await getRegionById('SAMPLE-REG-KR-001');
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/v1/regions/SAMPLE-REG-KR-001',
+        expect.any(Object),
+      );
+    });
+
+    it('calls /api/v1/resources/counts in getResourceCounts', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { categories: {}, totalEntities: 16 },
+        }),
+      } as unknown as Response);
+
+      await getResourceCounts();
+
+      expect(global.fetch).toHaveBeenCalledWith('/api/v1/resources/counts', expect.any(Object));
+    });
+
+    it('calls /api/v1/dev/data-status in getDataStatus', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { database: { connected: true, status: 'connected' } },
+        }),
+      } as unknown as Response);
+
+      await getDataStatus();
+
+      expect(global.fetch).toHaveBeenCalledWith('/api/v1/dev/data-status', expect.any(Object));
+    });
+
+    it('returns health payload in getHealth', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 'ok',
+          service: 'api',
+          version: '0.1.0',
+          architectureVersion: '1.0',
+        }),
+      } as unknown as Response);
+
+      const health = await getHealth();
+      expect(health.status).toBe('ok');
+    });
+
+    it('instantiates ApiClientError and NetworkError correctly', () => {
+      const err = new ApiClientError(
+        { code: 'VALIDATION_ERROR', message: 'Field missing', details: { f: 1 } },
+        'req-123',
+      );
+      expect(err.name).toBe('ApiClientError');
+      expect(err.code).toBe('VALIDATION_ERROR');
+      expect(err.requestId).toBe('req-123');
+
+      const netErr = new NetworkError('Connection timeout');
+      expect(netErr.name).toBe('NetworkError');
     });
   });
 

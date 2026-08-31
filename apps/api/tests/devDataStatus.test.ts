@@ -30,12 +30,11 @@ describe('API Service - /api/v1/dev/data-status', () => {
     const response = await request(app).get('/api/v1/dev/data-status');
 
     expect(response.status).toBe(403);
-    expect(response.body).toEqual({
-      success: false,
-      error: {
-        code: 'FORBIDDEN',
-        message: 'Diagnostic data-status endpoints are disabled in production.',
-      },
+    expect(response.body.success).toBe(false);
+    expect(response.body.error).toEqual({
+      code: 'FORBIDDEN',
+      message: 'Diagnostic data-status endpoints are disabled in production.',
     });
+    expect(response.body.requestId).toBeDefined();
   });
 });

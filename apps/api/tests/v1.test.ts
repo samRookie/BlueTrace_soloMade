@@ -9,15 +9,14 @@ describe('API Service - /api/v1 Namespace', () => {
     const response = await request(app).get('/api/v1/health');
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      success: true,
-      data: {
-        status: 'ok',
-        service: 'api',
-        version: '0.1.0',
-        architectureVersion: '1.0',
-      },
+    expect(response.body.success).toBe(true);
+    expect(response.body.data).toEqual({
+      status: 'ok',
+      service: 'api',
+      version: '0.1.0',
+      architectureVersion: '1.0',
     });
+    expect(response.body.meta?.requestId).toBeDefined();
   });
 
   it('GET /api/v1/version returns architecture version and operational status', async () => {
@@ -28,5 +27,6 @@ describe('API Service - /api/v1 Namespace', () => {
     expect(response.body.data).toHaveProperty('version', '0.1.0');
     expect(response.body.data).toHaveProperty('architectureVersion', '1.0');
     expect(response.body.data).toHaveProperty('status', 'operational');
+    expect(response.body.meta?.requestId).toBeDefined();
   });
 });

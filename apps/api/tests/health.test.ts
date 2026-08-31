@@ -29,12 +29,11 @@ describe('API Service - Health Endpoint', () => {
   it('returns 404 with standard error envelope for unknown endpoints', async () => {
     const response = await request(app).get('/unknown-endpoint');
     expect(response.status).toBe(404);
-    expect(response.body).toEqual({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'The requested resource does not exist.',
-      },
+    expect(response.body.success).toBe(false);
+    expect(response.body.error).toEqual({
+      code: 'NOT_FOUND',
+      message: 'The requested resource does not exist.',
     });
+    expect(response.body.requestId).toBeDefined();
   });
 });
