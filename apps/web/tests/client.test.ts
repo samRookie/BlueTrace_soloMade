@@ -167,8 +167,10 @@ describe('Web Application - Typed API Client & Presenters', () => {
     });
 
     it('formats Role labels correctly', () => {
-      expect(getRoleLabel('RESEARCHER')).toBe('Researcher');
+      expect(getRoleLabel('RESEARCHER')).toBe('Geospatial Researcher');
       expect(getRoleLabel('ADMIN')).toBe('Administrator');
+      expect(getRoleLabel('POLICY_OFFICER')).toBe('Land Policy Officer');
+      expect(getRoleLabel('VERIFIER')).toBe('Blue Carbon Verifier');
     });
   });
 });

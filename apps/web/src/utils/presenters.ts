@@ -66,14 +66,18 @@ export function getRoleLabel(role: Role): string {
   switch (role) {
     case 'ADMIN':
       return 'Administrator';
+    case 'POLICY_OFFICER':
+      return 'Land Policy Officer';
     case 'RESEARCHER':
-      return 'Researcher';
+      return 'Geospatial Researcher';
     case 'ANALYST':
-      return 'Policy Analyst';
-    case 'REVIEWER':
-      return 'Peer Reviewer';
-    case 'PUBLISHER':
-      return 'Data Publisher';
+      return 'Data & Evidence Analyst';
+    case 'VERIFIER':
+      return 'Blue Carbon Verifier';
+    case 'COMMUNITY_LEAD':
+      return 'Community Representative';
+    case 'DISPUTE_MEDIATOR':
+      return 'Dispute Resolution Mediator';
     case 'VIEWER':
       return 'Public Viewer';
   }

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: SIH26019 - National Land Governance Research & Policy Innovation Platform API
-  description: Canonical HTTP execution layer and backend architecture for the SIH26019 platform.
+  description: Canonical HTTP execution layer, RBAC security baseline, and backend architecture for the SIH26019 platform.
   version: 0.1.0
 servers:
   - url: http://localhost:3001
@@ -50,6 +50,166 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiSuccessResponse_Version'
 
+  /api/v1/auth/login:
+    post:
+      summary: Authenticate User
+      description: Authenticates user credentials and sets a secure HttpOnly session cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successfully authenticated
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: bluetrace_session=abc123...; HttpOnly; Path=/; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Login'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403':
+          description: Account disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      summary: Logout User
+      description: Terminates the active session and clears the session cookie.
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Logout'
+
+  /api/v1/auth/me:
+    get:
+      summary: Get Current User Profile
+      description: Returns the profile and permissions of the currently authenticated user.
+      responses:
+        '200':
+          description: Active user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/audit/events:
+    get:
+      summary: List Audit Events
+      description: Retrieves immutable compliance audit log entries. Requires audit:read permission.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: actorId
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [SUCCESS, FAILURE, DENIED]
+      responses:
+        '200':
+          description: Audit events list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_AuditEvents'
+        '403':
+          description: Forbidden (insufficient role permissions)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/workspaces:
+    get:
+      summary: List User Workspaces
+      description: Retrieves workspaces accessible to the authenticated user.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Accessible workspaces
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Workspaces'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/workspaces/{id}:
+    get:
+      summary: Get Workspace by ID
+      description: Retrieves a single workspace. Protected against IDOR (returns 404 for unauthorized private workspaces).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse_Workspace'
+        '404':
+          description: Workspace not found or unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
   /api/v1/regions:
     get:
       summary: List Administrative Regions
@@ -64,7 +224,7 @@ paths:
             default: 1
         - name: pageSize
           in: query
-          description: Number of items per page (maximum 100)
+          description: Number of records per page (1 to 100)
           schema:
             type: integer
             minimum: 1
@@ -72,47 +232,49 @@ paths:
             default: 20
         - name: level
           in: query
-          description: Administrative hierarchy level filter
+          description: Filter by administrative level
           schema:
-            $ref: '#/components/schemas/RegionLevel'
+            type: string
+            enum: [NATIONAL, STATE, DISTRICT, BLOCK, VILLAGE]
         - name: search
           in: query
           description: Search term matching region name or code
           schema:
             type: string
-            minLength: 1
-            maxLength: 100
       responses:
         '200':
-          description: Paginated collection of regions
+          description: Successfully retrieved paginated regions
           headers:
             x-request-id:
               $ref: '#/components/headers/X-Request-ID'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiSuccessResponse_PaginatedRegions'
+                $ref: '#/components/schemas/ApiSuccessResponse_Regions'
         '400':
-          $ref: '#/components/responses/400ValidationError'
-        '500':
-          $ref: '#/components/responses/500InternalError'
+          description: Validation error in query parameters
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 
   /api/v1/regions/{id}:
     get:
-      summary: Get Region by ID
-      description: Retrieves a single region record by primary key identifier.
+      summary: Get Region by Identifier
+      description: Retrieves a single administrative region by its unique ID.
       parameters:
         - name: id
           in: path
           required: true
-          description: Region unique ID (e.g. SAMPLE-REG-KR-001)
+          description: The unique identifier of the region
           schema:
             type: string
-            minLength: 1
-            maxLength: 64
       responses:
         '200':
-          description: Region details
+          description: Region found and returned
           headers:
             x-request-id:
               $ref: '#/components/headers/X-Request-ID'
@@ -121,17 +283,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiSuccessResponse_Region'
         '404':
-          $ref: '#/components/responses/404NotFound'
-        '500':
-          $ref: '#/components/responses/500InternalError'
+          description: Region not found
+          headers:
+            x-request-id:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 
   /api/v1/resources/counts:
     get:
-      summary: Get Categorized Entity Counts
-      description: Returns aggregate counts across all domain entities in the persistent evidence graph.
+      summary: Get Platform Entity Counts
+      description: Retrieves aggregated row counts for all foundational evidence graph tables.
       responses:
         '200':
-          description: Entity count summary
+          description: Entity counts retrieved successfully
           headers:
             x-request-id:
               $ref: '#/components/headers/X-Request-ID'
@@ -139,16 +306,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiSuccessResponse_ResourceCounts'
-        '500':
-          $ref: '#/components/responses/500InternalError'
 
   /api/v1/dev/data-status:
     get:
       summary: Development Data Status Diagnostics
-      description: Development-only diagnostic endpoint reporting database connectivity and seeded sample graph status.
+      description: Returns health, migration status, and seed counts for development diagnostics.
       responses:
         '200':
-          description: Development data diagnostics
+          description: Diagnostic report generated
           headers:
             x-request-id:
               $ref: '#/components/headers/X-Request-ID'
@@ -156,119 +321,135 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiSuccessResponse_DataStatus'
-        '403':
-          $ref: '#/components/responses/403Forbidden'
-        '500':
-          $ref: '#/components/responses/500InternalError'
 
 components:
   headers:
     X-Request-ID:
-      description: Unique UUID request correlation identifier
+      description: Unique correlation identifier for tracing request lifecycle across services.
       schema:
         type: string
         format: uuid
 
-  responses:
-    400ValidationError:
-      description: Request validation failed
-      headers:
-        x-request-id:
-          $ref: '#/components/headers/X-Request-ID'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
-
-    403Forbidden:
-      description: Action or diagnostic endpoint is forbidden in current environment
-      headers:
-        x-request-id:
-          $ref: '#/components/headers/X-Request-ID'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
-
-    404NotFound:
-      description: Target resource was not found
-      headers:
-        x-request-id:
-          $ref: '#/components/headers/X-Request-ID'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
-
-    500InternalError:
-      description: Sanitized internal server error
-      headers:
-        x-request-id:
-          $ref: '#/components/headers/X-Request-ID'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
-
   schemas:
-    HealthCheckResponse:
+    LoginRequest:
       type: object
       required:
-        - status
-        - service
-        - version
-        - architectureVersion
+        - email
+        - password
       properties:
-        status:
+        email:
           type: string
-          example: ok
-        service:
+          format: email
+          example: admin@bluetrace.gov.in
+        password:
           type: string
-          example: api
-        version:
-          type: string
-          example: 0.1.0
-        architectureVersion:
-          type: string
-          example: '1.0'
+          format: password
+          example: BlueTrace#Demo2026!
 
-    RegionLevel:
-      type: string
-      enum:
-        - COUNTRY
-        - STATE
-        - DISTRICT
-        - SUB_DISTRICT
-        - LOCAL
-
-    RegionDto:
+    AuthenticatedUser:
       type: object
       required:
         - id
-        - code
+        - email
         - name
-        - level
-        - sampleFlag
+        - role
+        - status
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+            [
+              ADMIN,
+              POLICY_OFFICER,
+              RESEARCHER,
+              ANALYST,
+              VERIFIER,
+              COMMUNITY_LEAD,
+              DISPUTE_MEDIATOR,
+              VIEWER,
+            ]
+        status:
+          type: string
+          enum: [ACTIVE, DISABLED]
+        sampleFlag:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditEventDto:
+      type: object
+      required:
+        - id
+        - action
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        actorId:
+          type: string
+          nullable: true
+        actorRole:
+          type: string
+          nullable: true
+        action:
+          type: string
+        targetType:
+          type: string
+          nullable: true
+        targetId:
+          type: string
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [SUCCESS, FAILURE, DENIED]
+        details:
+          type: object
+        ipAddress:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    WorkspaceDto:
+      type: object
+      required:
+        - id
+        - name
+        - ownerId
+        - ownerType
+        - visibility
         - createdAt
         - updatedAt
       properties:
         id:
           type: string
-          example: SAMPLE-REG-KR-001
-        code:
-          type: string
-          example: IN-AP-CORINGA
         name:
           type: string
-          example: Coringa Mangrove Estuarine Zone
-        level:
-          $ref: '#/components/schemas/RegionLevel'
-        parentCode:
+        description:
           type: string
           nullable: true
+        ownerId:
+          type: string
+        ownerType:
+          type: string
+          enum: [USER, INSTITUTION]
+        visibility:
+          type: string
+          enum: [PUBLIC, RESTRICTED, INTERNAL]
         sampleFlag:
           type: boolean
-          example: true
         createdAt:
           type: string
           format: date-time
@@ -276,56 +457,36 @@ components:
           type: string
           format: date-time
 
-    PaginationMeta:
+    HealthCheckResponse:
       type: object
       required:
-        - page
-        - pageSize
-        - total
-        - totalPages
+        - status
+        - timestamp
+        - version
+        - architectureVersion
       properties:
-        page:
-          type: integer
-          example: 1
-        pageSize:
-          type: integer
-          example: 20
-        total:
-          type: integer
-          example: 1
-        totalPages:
-          type: integer
-          example: 1
-
-    ApiMetadata:
-      type: object
-      properties:
-        requestId:
+        status:
           type: string
-        page:
-          type: integer
-        limit:
-          type: integer
-        total:
-          type: integer
+          enum: [ok, degraded, error]
         timestamp:
           type: string
           format: date-time
+        version:
+          type: string
+        architectureVersion:
+          type: string
 
-    ApiErrorDetails:
+    ApiMetadata:
       type: object
       required:
-        - code
-        - message
+        - timestamp
       properties:
-        code:
+        timestamp:
           type: string
-          example: VALIDATION_ERROR
-        message:
+          format: date-time
+        requestId:
           type: string
-          example: Request validation failed.
-        details:
-          type: object
+          format: uuid
 
     ApiErrorResponse:
       type: object
@@ -337,9 +498,144 @@ components:
           type: boolean
           example: false
         error:
-          $ref: '#/components/schemas/ApiErrorDetails'
-        requestId:
-          type: string
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                [
+                  VALIDATION_ERROR,
+                  UNAUTHORIZED,
+                  FORBIDDEN,
+                  NOT_FOUND,
+                  CONFLICT,
+                  BAD_REQUEST,
+                  INTERNAL_ERROR,
+                  SERVICE_UNAVAILABLE,
+                ]
+            message:
+              type: string
+            details:
+              type: object
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Login:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/AuthenticatedUser'
+            session:
+              type: object
+              properties:
+                id:
+                  type: string
+                expiresAt:
+                  type: string
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Logout:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            loggedOut:
+              type: boolean
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_User:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/AuthenticatedUser'
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_AuditEvents:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditEventDto'
+            pagination:
+              type: object
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Workspaces:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkspaceDto'
+            pagination:
+              type: object
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
+
+    ApiSuccessResponse_Workspace:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/WorkspaceDto'
+        meta:
+          $ref: '#/components/schemas/ApiMetadata'
 
     ApiSuccessResponse_Health:
       type: object
@@ -378,7 +674,7 @@ components:
         meta:
           $ref: '#/components/schemas/ApiMetadata'
 
-    ApiSuccessResponse_PaginatedRegions:
+    ApiSuccessResponse_Regions:
       type: object
       required:
         - success
@@ -389,16 +685,13 @@ components:
           example: true
         data:
           type: object
-          required:
-            - items
-            - pagination
           properties:
             items:
               type: array
               items:
-                $ref: '#/components/schemas/RegionDto'
+                type: object
             pagination:
-              $ref: '#/components/schemas/PaginationMeta'
+              type: object
         meta:
           $ref: '#/components/schemas/ApiMetadata'
 
@@ -412,7 +705,7 @@ components:
           type: boolean
           example: true
         data:
-          $ref: '#/components/schemas/RegionDto'
+          type: object
         meta:
           $ref: '#/components/schemas/ApiMetadata'
 

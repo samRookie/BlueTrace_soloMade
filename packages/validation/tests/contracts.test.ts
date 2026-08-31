@@ -178,7 +178,16 @@ describe('Phase 1 Domain & API Validation Contracts', () => {
 
   describe('Role Vocabulary', () => {
     it('validates standard platform roles', () => {
-      const roles = ['ADMIN', 'RESEARCHER', 'ANALYST', 'REVIEWER', 'PUBLISHER', 'VIEWER'];
+      const roles = [
+        'ADMIN',
+        'POLICY_OFFICER',
+        'RESEARCHER',
+        'ANALYST',
+        'VERIFIER',
+        'COMMUNITY_LEAD',
+        'DISPUTE_MEDIATOR',
+        'VIEWER',
+      ];
       for (const role of roles) {
         expect(roleSchema.safeParse(role).success).toBe(true);
       }

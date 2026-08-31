@@ -1,10 +1,16 @@
 import type {
   ApiResponse,
-  ApiSuccessResponse,
   ApiErrorResponse,
   RegionFilterQuery,
   PaginatedData,
   HealthCheckResponse,
+  LoginRequest,
+  LoginResponse,
+  AuthenticatedUser,
+  AuditEventDto,
+  AuditStatus,
+  WorkspaceDto,
+  PaginationQuery,
 } from '@sih26019/shared-types';
 
 export interface ApiClientOptions extends RequestInit {
@@ -44,6 +50,7 @@ export async function fetchApi<T>(
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
     ...(options.headers || {}),
   };
 
@@ -51,6 +58,7 @@ export async function fetchApi<T>(
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: options.credentials || 'include',
     });
 
     const body = (await response.json()) as ApiResponse<T>;
@@ -67,7 +75,85 @@ export async function fetchApi<T>(
 }
 
 /**
- * Typed client API functions for frontend consumers.
+ * Authentication API Client Methods
+ */
+export async function login(
+  credentials: LoginRequest,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<LoginResponse>> {
+  return fetchApi<LoginResponse>('/api/v1/auth/login', {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  });
+}
+
+export async function logout(
+  options?: ApiClientOptions,
+): Promise<ApiResponse<{ loggedOut: boolean }>> {
+  return fetchApi<{ loggedOut: boolean }>('/api/v1/auth/logout', {
+    ...options,
+    method: 'POST',
+  });
+}
+
+export async function getCurrentUser(
+  options?: ApiClientOptions,
+): Promise<ApiResponse<{ user: AuthenticatedUser }>> {
+  return fetchApi<{ user: AuthenticatedUser }>('/api/v1/auth/me', options);
+}
+
+/**
+ * Audit and Workspaces API Client Methods
+ */
+export async function getAuditEvents(
+  params: {
+    page?: number;
+    pageSize?: number;
+    actorId?: string;
+    action?: string;
+    status?: AuditStatus;
+  } = {},
+  options?: ApiClientOptions,
+): Promise<ApiResponse<PaginatedData<AuditEventDto>>> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.pageSize) searchParams.set('pageSize', String(params.pageSize));
+  if (params.actorId) searchParams.set('actorId', params.actorId);
+  if (params.action) searchParams.set('action', params.action);
+  if (params.status) searchParams.set('status', params.status);
+
+  const query = searchParams.toString();
+  return fetchApi<PaginatedData<AuditEventDto>>(
+    `/api/v1/audit/events${query ? `?${query}` : ''}`,
+    options,
+  );
+}
+
+export async function getWorkspaces(
+  params: PaginationQuery = {},
+  options?: ApiClientOptions,
+): Promise<ApiResponse<PaginatedData<WorkspaceDto>>> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.pageSize) searchParams.set('pageSize', String(params.pageSize));
+
+  const query = searchParams.toString();
+  return fetchApi<PaginatedData<WorkspaceDto>>(
+    `/api/v1/workspaces${query ? `?${query}` : ''}`,
+    options,
+  );
+}
+
+export async function getWorkspaceById(
+  id: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<WorkspaceDto>> {
+  return fetchApi<WorkspaceDto>(`/api/v1/workspaces/${encodeURIComponent(id)}`, options);
+}
+
+/**
+ * Domain & Infrastructure API Client Methods
  */
 export async function getRegions(
   params: RegionFilterQuery = {},

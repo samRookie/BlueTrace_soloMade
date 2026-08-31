@@ -197,9 +197,11 @@ export const evidenceRelationshipSchema = z.object({
  */
 export const roleSchema = z.enum([
   'ADMIN',
+  'POLICY_OFFICER',
   'RESEARCHER',
   'ANALYST',
-  'REVIEWER',
-  'PUBLISHER',
+  'VERIFIER',
+  'COMMUNITY_LEAD',
+  'DISPUTE_MEDIATOR',
   'VIEWER',
 ]) satisfies z.ZodType<Role>;

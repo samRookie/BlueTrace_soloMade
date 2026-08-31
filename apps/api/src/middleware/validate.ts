@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
-import type { z } from 'zod';
+import type { z } from '@sih26019/validation';
 
 export interface RequestValidationSchemas {
   query?: z.ZodTypeAny;

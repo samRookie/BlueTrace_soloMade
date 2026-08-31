@@ -31,7 +31,7 @@ export class RegionController {
   getRegionById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const region = await this.regionService.getRegionById(id);
+      const region = await this.regionService.getRegionById(id as string);
 
       res.status(200).json(
         createSuccessResponse(region, {

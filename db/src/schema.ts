@@ -18,6 +18,9 @@ import type {
   Visibility,
   OwnerType,
   EvidenceRelationshipType,
+  Role,
+  UserStatus,
+  AuditStatus,
 } from '@sih26019/shared-types';
 
 /**
@@ -141,14 +144,11 @@ export const indicators = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [
-    index('indicators_policy_idx').on(table.policyId),
-    index('indicators_category_idx').on(table.category),
-  ],
+  (table) => [index('indicators_policy_idx').on(table.policyId)],
 );
 
 /**
- * 6. GIS Layers Metadata Table
+ * 6. GIS Layers Table
  */
 export const gisLayers = pgTable(
   'gis_layers',
@@ -166,15 +166,15 @@ export const gisLayers = pgTable(
       .$type<Visibility>()
       .notNull()
       .default('PUBLIC'),
-    status: varchar('status', { length: 32 })
-      .$type<LifecycleStatus>()
-      .notNull()
-      .default('PUBLISHED'),
+    status: varchar('status', { length: 32 }).notNull().default('PUBLISHED'),
     sampleFlag: boolean('sample_flag').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('gis_layers_region_idx').on(table.regionId)],
+  (table) => [
+    index('gis_layers_region_idx').on(table.regionId),
+    index('gis_layers_type_idx').on(table.layerType),
+  ],
 );
 
 /**
@@ -191,7 +191,7 @@ export const projects = pgTable(
       .notNull()
       .references(() => regions.id, { onDelete: 'restrict' }),
     workspaceId: varchar('workspace_id', { length: 64 }).references(() => workspaces.id, {
-      onDelete: 'set null',
+      onDelete: 'cascade',
     }),
     lifecycleStatus: varchar('lifecycle_status', { length: 32 })
       .$type<LifecycleStatus>()
@@ -227,19 +227,19 @@ export const innovationOpportunities = pgTable(
     policyId: varchar('policy_id', { length: 64 }).references(() => policies.id, {
       onDelete: 'set null',
     }),
-    status: varchar('status', { length: 32 }).$type<LifecycleStatus>().notNull().default('DRAFT'),
+    status: varchar('status', { length: 32 }).notNull().default('DRAFT'),
     sampleFlag: boolean('sample_flag').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index('innovation_project_idx').on(table.projectId),
-    index('innovation_policy_idx').on(table.policyId),
+    index('innovations_project_idx').on(table.projectId),
+    index('innovations_policy_idx').on(table.policyId),
   ],
 );
 
 /**
- * 9. Blue Carbon Projects Table
+ * 9. Blue Carbon Projects Table (1:1 with Projects)
  */
 export const blueCarbonProjects = pgTable(
   'blue_carbon_projects',
@@ -256,7 +256,7 @@ export const blueCarbonProjects = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('blue_carbon_project_idx').on(table.projectId)],
+  (table) => [index('blue_carbon_ecosystem_idx').on(table.ecosystemType)],
 );
 
 /**
@@ -276,13 +276,13 @@ export const mrvRecords = pgTable(
       precision: 12,
       scale: 2,
     }).notNull(),
-    status: varchar('status', { length: 32 }).$type<LifecycleStatus>().notNull().default('DRAFT'),
+    status: varchar('status', { length: 32 }).notNull().default('DRAFT'),
     sampleFlag: boolean('sample_flag').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index('mrv_blue_carbon_idx').on(table.blueCarbonProjectId),
+    index('mrv_project_idx').on(table.blueCarbonProjectId),
     check('mrv_period_check', sql`${table.reportingPeriodStart} <= ${table.reportingPeriodEnd}`),
   ],
 );
@@ -309,13 +309,13 @@ export const verificationRecords = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index('verification_mrv_idx').on(table.mrvId),
-    index('verification_status_idx').on(table.verificationStatus),
+    index('verifications_mrv_idx').on(table.mrvId),
+    index('verifications_status_idx').on(table.verificationStatus),
   ],
 );
 
 /**
- * 12. Integrity Records Table
+ * 12. Integrity Records Table (1:1 with Verification Records)
  */
 export const integrityRecords = pgTable(
   'integrity_records',
@@ -336,7 +336,7 @@ export const integrityRecords = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('integrity_verification_idx').on(table.verificationId)],
+  (table) => [index('integrity_hash_idx').on(table.checksum)],
 );
 
 /**
@@ -412,7 +412,7 @@ export const evidenceItems = pgTable(
 );
 
 /**
- * 15. Evidence Relationships Table
+ * 15. Evidence Relationships Table (Graph Edges)
  */
 export const evidenceRelationships = pgTable(
   'evidence_relationships',
@@ -435,21 +435,142 @@ export const evidenceRelationships = pgTable(
       table.targetEvidenceId,
       table.relationshipType,
     ),
+    index('evidence_rel_source_idx').on(table.sourceEvidenceId),
+    index('evidence_rel_target_idx').on(table.targetEvidenceId),
     check('evidence_rel_no_self_loop', sql`${table.sourceEvidenceId} <> ${table.targetEvidenceId}`),
   ],
 );
 
 /**
- * Drizzle Relations Definitions for Graph Traversal
+ * 16. Users Table (Phase 4 Security & Personas)
  */
-export const regionsRelations = relations(regions, ({ many, one }) => ({
-  gisLayers: many(gisLayers),
+export const users = pgTable(
+  'users',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    role: varchar('role', { length: 32 }).$type<Role>().notNull(),
+    status: varchar('status', { length: 32 }).$type<UserStatus>().notNull().default('ACTIVE'),
+    sampleFlag: boolean('sample_flag').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('users_email_idx').on(table.email),
+    index('users_role_idx').on(table.role),
+    index('users_status_idx').on(table.status),
+    index('users_sample_flag_idx').on(table.sampleFlag),
+  ],
+);
+
+/**
+ * 17. Sessions Table (Phase 4 Server-Managed Sessions)
+ */
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    userId: varchar('user_id', { length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sessionTokenHash: varchar('session_token_hash', { length: 128 }).notNull().unique(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    ipAddress: varchar('ip_address', { length: 64 }),
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('sessions_user_id_idx').on(table.userId),
+    index('sessions_token_hash_idx').on(table.sessionTokenHash),
+    index('sessions_expires_at_idx').on(table.expiresAt),
+  ],
+);
+
+/**
+ * 18. Audit Events Table (Phase 4 Immutable Security Logs)
+ */
+export const auditEvents = pgTable(
+  'audit_events',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    actorId: varchar('actor_id', { length: 64 }),
+    actorRole: varchar('actor_role', { length: 32 }).$type<Role>(),
+    action: varchar('action', { length: 64 }).notNull(),
+    targetType: varchar('target_type', { length: 64 }),
+    targetId: varchar('target_id', { length: 64 }),
+    requestId: varchar('request_id', { length: 64 }),
+    status: varchar('status', { length: 32 }).$type<AuditStatus>().notNull(),
+    details: text('details'),
+    ipAddress: varchar('ip_address', { length: 64 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('audit_events_actor_idx').on(table.actorId),
+    index('audit_events_action_idx').on(table.action),
+    index('audit_events_target_idx').on(table.targetType, table.targetId),
+    index('audit_events_request_id_idx').on(table.requestId),
+    index('audit_events_created_at_idx').on(table.createdAt),
+  ],
+);
+
+/**
+ * 19. Workspace Memberships Table (Phase 4 Membership Authorization)
+ */
+export const workspaceMemberships = pgTable(
+  'workspace_memberships',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    workspaceId: varchar('workspace_id', { length: 64 })
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id', { length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: varchar('role', { length: 32 }).$type<Role>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('workspace_memberships_unique_idx').on(table.workspaceId, table.userId),
+    index('workspace_memberships_workspace_idx').on(table.workspaceId),
+    index('workspace_memberships_user_idx').on(table.userId),
+  ],
+);
+
+/**
+ * Relational Graph Definitions (Drizzle ORM Relations)
+ */
+export const sourcesRelations = relations(sources, ({ many }) => ({
   policies: many(policies),
+  gisLayers: many(gisLayers),
+  evidenceItems: many(evidenceItems),
+}));
+
+export const regionsRelations = relations(regions, ({ many }) => ({
+  policies: many(policies),
+  gisLayers: many(gisLayers),
   projects: many(projects),
-  parent: one(regions, {
-    fields: [regions.parentCode],
-    references: [regions.code],
+}));
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  projects: many(projects),
+  memberships: many(workspaceMemberships),
+}));
+
+export const policiesRelations = relations(policies, ({ one, many }) => ({
+  region: one(regions, {
+    fields: [policies.regionId],
+    references: [regions.id],
   }),
+  source: one(sources, {
+    fields: [policies.sourceId],
+    references: [sources.id],
+  }),
+  indicators: many(indicators),
+  innovationOpportunities: many(innovationOpportunities),
+  evidenceItems: many(evidenceItems),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -497,19 +618,6 @@ export const verificationRecordsRelations = relations(verificationRecords, ({ on
   }),
 }));
 
-export const policiesRelations = relations(policies, ({ one, many }) => ({
-  region: one(regions, {
-    fields: [policies.regionId],
-    references: [regions.id],
-  }),
-  source: one(sources, {
-    fields: [policies.sourceId],
-    references: [sources.id],
-  }),
-  indicators: many(indicators),
-  evidenceItems: many(evidenceItems),
-}));
-
 export const evidenceItemsRelations = relations(evidenceItems, ({ one, many }) => ({
   source: one(sources, {
     fields: [evidenceItems.sourceId],
@@ -523,31 +631,25 @@ export const evidenceItemsRelations = relations(evidenceItems, ({ one, many }) =
     fields: [evidenceItems.policyId],
     references: [policies.id],
   }),
-  outgoingRelationships: many(evidenceRelationships, { relationName: 'sourceRelations' }),
-  incomingRelationships: many(evidenceRelationships, { relationName: 'targetRelations' }),
+  outgoingRelationships: many(evidenceRelationships, {
+    relationName: 'sourceEvidence',
+  }),
+  incomingRelationships: many(evidenceRelationships, {
+    relationName: 'targetEvidence',
+  }),
 }));
 
 export const evidenceRelationshipsRelations = relations(evidenceRelationships, ({ one }) => ({
   sourceEvidence: one(evidenceItems, {
     fields: [evidenceRelationships.sourceEvidenceId],
     references: [evidenceItems.id],
-    relationName: 'sourceRelations',
+    relationName: 'sourceEvidence',
   }),
   targetEvidence: one(evidenceItems, {
     fields: [evidenceRelationships.targetEvidenceId],
     references: [evidenceItems.id],
-    relationName: 'targetRelations',
+    relationName: 'targetEvidence',
   }),
-}));
-
-export const sourcesRelations = relations(sources, ({ many }) => ({
-  policies: many(policies),
-  gisLayers: many(gisLayers),
-  evidenceItems: many(evidenceItems),
-}));
-
-export const workspacesRelations = relations(workspaces, ({ many }) => ({
-  projects: many(projects),
 }));
 
 export const indicatorsRelations = relations(indicators, ({ one }) => ({
@@ -590,6 +692,29 @@ export const integrityRecordsRelations = relations(integrityRecords, ({ one }) =
   verificationRecord: one(verificationRecords, {
     fields: [integrityRecords.verificationId],
     references: [verificationRecords.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  workspaceMemberships: many(workspaceMemberships),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const workspaceMembershipsRelations = relations(workspaceMemberships, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [workspaceMemberships.workspaceId],
+    references: [workspaces.id],
+  }),
+  user: one(users, {
+    fields: [workspaceMemberships.userId],
+    references: [users.id],
   }),
 }));
 
@@ -640,3 +765,15 @@ export type InsertEvidenceItemRow = typeof evidenceItems.$inferInsert;
 
 export type EvidenceRelationshipRow = typeof evidenceRelationships.$inferSelect;
 export type InsertEvidenceRelationshipRow = typeof evidenceRelationships.$inferInsert;
+
+export type UserRow = typeof users.$inferSelect;
+export type InsertUserRow = typeof users.$inferInsert;
+
+export type SessionRow = typeof sessions.$inferSelect;
+export type InsertSessionRow = typeof sessions.$inferInsert;
+
+export type AuditEventRow = typeof auditEvents.$inferSelect;
+export type InsertAuditEventRow = typeof auditEvents.$inferInsert;
+
+export type WorkspaceMembershipRow = typeof workspaceMemberships.$inferSelect;
+export type InsertWorkspaceMembershipRow = typeof workspaceMemberships.$inferInsert;

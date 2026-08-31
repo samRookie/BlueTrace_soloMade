@@ -1,4 +1,4 @@
-# Backend Foundation & API Architecture (Phase 3)
+# Backend Foundation & API Architecture (Phase 4)
 
 ## 1. Overview
 
@@ -9,15 +9,17 @@ It strictly adheres to a clean separation of concerns:
 ```text
 HTTP Request
       ↓
-Middleware Pipeline (requestId -> cors -> express.json)
+Middleware Pipeline (requestId -> cors -> session -> csrfProtection)
       ↓
 Route Registry (/api/v1/...)
       ↓
+Authentication & Authorization Guards (requireAuth -> requirePermission)
+      ↓
 Validation Middleware (Zod-powered query/params/body parsing)
       ↓
-Controller Layer (HTTP orchestration, DTO response mapping)
+Controller Layer (HTTP orchestration, cookie handling, DTO response mapping)
       ↓
-Domain Service Layer (Domain logic, validation, repository coordination)
+Domain Service Layer (Domain logic, IDOR assertions, audit event recording)
       ↓
 Repository Layer (Parameterized Drizzle ORM queries, data access)
       ↓
@@ -30,108 +32,91 @@ Database (PostgreSQL Connection Pool)
 
 1. **Request ID Middleware (`requestIdMiddleware`)**:
    - Generates a UUID v4 identifier or preserves a safe incoming `x-request-id` header (`^[a-zA-Z0-9_-]{1,64}$`).
-   - Attaches `req.id` to Express execution context.
-   - Sets `x-request-id` response header.
-   - Embeds `requestId` into all error envelopes and success metadata.
+   - Attaches `req.id` to Express execution context and response headers.
+   - Embeds `requestId` into all error envelopes and audit logs.
 
 2. **CORS & Body Parser**:
-   - `cors()` for cross-origin security.
+   - `cors({ credentials: true })` for cross-origin security.
    - `express.json({ limit: '1mb' })` with bounded body size protection against payload abuse.
 
-3. **Validation Middleware (`validateRequest`)**:
-   - Declarative validation for `query`, `params`, and `body` using Zod schemas.
-   - Automatically coerces valid numeric types and returns standard HTTP 400 `VALIDATION_ERROR` envelopes before reaching controller code.
+3. **Session Middleware (`sessionMiddleware`)**:
+   - Extracts session token from `bluetrace_session` HttpOnly cookie or Authorization Bearer header.
+   - Hydrates `req.user` and `req.session` from verified database session records.
 
-4. **Centralized Error Handler (`errorHandler`)**:
+4. **CSRF Protection (`csrfProtection`)**:
+   - Enforces Origin/Referer verification and `X-Requested-With` header checks on state-changing methods (`POST`, `PUT`, `DELETE`, `PATCH`).
+
+5. **Authentication & RBAC Guards (`requireAuth`, `requirePermission`)**:
+   - `requireAuth`: Enforces active session, rejecting unauthenticated requests with HTTP 401.
+   - `requirePermission`: Verifies caller role possesses requisite capability in the centralized policy matrix, rejecting unauthorized callers with HTTP 403.
+
+6. **Validation Middleware (`validateRequest`)**:
+   - Declarative validation for `query`, `params`, and `body` using Zod schemas.
+   - Returns standard HTTP 400 `VALIDATION_ERROR` envelopes before reaching controller code.
+
+7. **Centralized Error Handler (`errorHandler`)**:
    - Distinguishes operational `AppError` subclasses (`BadRequestError`, `ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`).
    - Sanitizes unexpected 500 errors to prevent credential, hostname, or stack trace leakage in client responses.
 
 ---
 
-## 3. Foundation Route Registry
+## 3. API Route Registry
 
-All business routes reside under the `/api/v1` namespace. Infrastructure health checks are exposed at both `/health` and `/api/v1/health`.
+All business routes reside under the `/api/v1` namespace.
 
-| Method | Route                      | Description                            | Query Parameters                      |
-| :----- | :------------------------- | :------------------------------------- | :------------------------------------ |
-| `GET`  | `/health`                  | Unversioned health probe               | None                                  |
-| `GET`  | `/api/v1/health`           | Standard versioned health check        | None                                  |
-| `GET`  | `/api/v1/version`          | Platform baseline and environment info | None                                  |
-| `GET`  | `/api/v1/regions`          | Paginated administrative regions       | `page`, `pageSize`, `level`, `search` |
-| `GET`  | `/api/v1/regions/:id`      | Single region details by ID            | None (`:id` route parameter)          |
-| `GET`  | `/api/v1/resources/counts` | Aggregated evidence entity counts      | None                                  |
-| `GET`  | `/api/v1/dev/data-status`  | Development data & DB diagnostics      | None (_Disabled in production_)       |
+| Method | Route                      | Description                              | Auth / Permission     | Parameters / Body                                 |
+| :----- | :------------------------- | :--------------------------------------- | :-------------------- | :------------------------------------------------ |
+| `GET`  | `/health`                  | Unversioned health probe                 | Public                | None                                              |
+| `GET`  | `/api/v1/health`           | Standard versioned health check          | Public                | None                                              |
+| `GET`  | `/api/v1/version`          | Platform baseline and environment info   | Public                | None                                              |
+| `POST` | `/api/v1/auth/login`       | Authenticate user & issue session cookie | Public (Rate Limited) | `{ email, password }`                             |
+| `POST` | `/api/v1/auth/logout`      | Revoke session & clear cookie            | Authenticated         | None                                              |
+| `GET`  | `/api/v1/auth/me`          | Current authenticated user profile       | Authenticated         | None                                              |
+| `GET`  | `/api/v1/audit/events`     | Compliance security audit log            | `audit:read`          | `page`, `pageSize`, `actorId`, `action`, `status` |
+| `GET`  | `/api/v1/workspaces`       | Accessible user workspaces               | Authenticated         | `page`, `pageSize`                                |
+| `GET`  | `/api/v1/workspaces/:id`   | Single workspace by ID (IDOR protected)  | Authenticated         | `id` in path                                      |
+| `GET`  | `/api/v1/regions`          | Paginated administrative regions         | Public / Base         | `page`, `pageSize`, `level`, `search`             |
+| `GET`  | `/api/v1/regions/:id`      | Single region by ID                      | Public / Base         | `id` in path                                      |
+| `GET`  | `/api/v1/resources/counts` | Aggregated entity counts                 | Public / Base         | None                                              |
+| `GET`  | `/api/v1/dev/data-status`  | Database seed & readiness diagnostics    | Dev Only              | None                                              |
 
 ---
 
-## 4. Response Envelope Conventions
+## 4. Response Envelopes & Standard Status Codes
 
-### Standard Success Response Envelope
+### Success Response (`200 OK`)
 
 ```json
 {
   "success": true,
   "data": {
-    "items": [],
-    "pagination": {
-      "page": 1,
-      "pageSize": 20,
-      "total": 1,
-      "totalPages": 1
+    "user": {
+      "id": "SAMPLE-USR-001",
+      "email": "admin@bluetrace.gov.in",
+      "name": "Admin User",
+      "role": "ADMIN",
+      "status": "ACTIVE"
     }
   },
   "meta": {
-    "requestId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-    "page": 1,
-    "limit": 20,
-    "total": 1
+    "requestId": "a0d08814-2a82-4d78-bb4f-0dfe37e4d750",
+    "timestamp": "2026-08-31T19:00:00.000Z"
   }
 }
 ```
 
-### Standard Error Response Envelope
+### Error Response (`401 UNAUTHORIZED` / `403 FORBIDDEN` / `404 NOT_FOUND`)
 
 ```json
 {
   "success": false,
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Request validation failed.",
-    "details": [
-      {
-        "code": "too_big",
-        "maximum": 100,
-        "type": "number",
-        "inclusive": true,
-        "exact": false,
-        "message": "Number must be less than or equal to 100",
-        "path": ["pageSize"]
-      }
-    ]
+    "code": "FORBIDDEN",
+    "message": "Forbidden: User does not possess 'audit:read' permission."
   },
-  "requestId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+  "meta": {
+    "requestId": "a0d08814-2a82-4d78-bb4f-0dfe37e4d750",
+    "timestamp": "2026-08-31T19:00:00.000Z"
+  }
 }
 ```
-
----
-
-## 5. HTTP Error Code Mapping
-
-| Error Code         | HTTP Status | Description                                                       |
-| :----------------- | :---------: | :---------------------------------------------------------------- |
-| `VALIDATION_ERROR` |     400     | Query, route parameter, or request body failed schema validation. |
-| `BAD_REQUEST`      |     400     | Malformed request syntax or invalid parameter combinations.       |
-| `UNAUTHORIZED`     |     401     | Missing or invalid authentication token.                          |
-| `FORBIDDEN`        |     403     | Diagnostic endpoint or action disabled in current environment.    |
-| `NOT_FOUND`        |     404     | Target entity or route does not exist.                            |
-| `CONFLICT`         |     409     | Duplicate entity unique key or constraint conflict.               |
-| `INTERNAL_ERROR`   |     500     | Unhandled internal exception (sanitized output).                  |
-
----
-
-## 6. Pagination & Filtering Rules
-
-- **Default Page**: `1` (1-indexed)
-- **Default Page Size**: `20`
-- **Max Page Size**: `100` (Enforced by `paginationQuerySchema`)
-- **Safe Filtering**: Whitelisted filter fields (`level` matching `RegionLevel`, `search` matching text up to 100 characters). Raw SQL fragments in query parameters are strictly rejected.

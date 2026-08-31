@@ -328,6 +328,42 @@ export async function seedDatabase(database: AppDatabase = db): Promise<void> {
     `[Seed Engine] Seeded ${coastalMangroveSeedData.evidenceRelationships.length} evidence relationships.`,
   );
 
+  // 16. Users (Phase 4 Eight Personas)
+  for (const item of coastalMangroveSeedData.users) {
+    await database
+      .insert(schema.users)
+      .values(item)
+      .onConflictDoUpdate({
+        target: schema.users.id,
+        set: {
+          email: item.email,
+          name: item.name,
+          role: item.role,
+          status: item.status,
+          passwordHash: item.passwordHash,
+          sampleFlag: item.sampleFlag,
+          updatedAt: new Date(),
+        },
+      });
+  }
+  console.log(`[Seed Engine] Seeded ${coastalMangroveSeedData.users.length} users.`);
+
+  // 17. Workspace Memberships
+  for (const item of coastalMangroveSeedData.workspaceMemberships) {
+    await database
+      .insert(schema.workspaceMemberships)
+      .values(item)
+      .onConflictDoUpdate({
+        target: [schema.workspaceMemberships.workspaceId, schema.workspaceMemberships.userId],
+        set: {
+          role: item.role,
+        },
+      });
+  }
+  console.log(
+    `[Seed Engine] Seeded ${coastalMangroveSeedData.workspaceMemberships.length} workspace memberships.`,
+  );
+
   console.log('[Seed Engine] Deterministic seed execution completed successfully.');
 }
 

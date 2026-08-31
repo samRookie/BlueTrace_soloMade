@@ -1,2 +1,2 @@
 export * from './schemas.js';
-export { z, ZodError } from 'zod';
+export { z, ZodError, type ZodSchema } from 'zod';

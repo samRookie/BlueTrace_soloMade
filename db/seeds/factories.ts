@@ -14,6 +14,8 @@ import type {
   InsertDisputeRow,
   InsertEvidenceItemRow,
   InsertEvidenceRelationshipRow,
+  InsertUserRow,
+  InsertWorkspaceMembershipRow,
 } from '../src/schema.js';
 
 export function createSource(
@@ -79,8 +81,8 @@ export function createIndicator(
     id: string;
     code: string;
     name: string;
-    category: string;
     unit: string;
+    category: string;
   },
 ): InsertIndicatorRow {
   return {
@@ -170,7 +172,7 @@ export function createMrvRecord(
   },
 ): InsertMrvRecordRow {
   return {
-    status: 'PUBLISHED',
+    status: 'VERIFIED',
     sampleFlag: true,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -188,7 +190,7 @@ export function createVerificationRecord(
 ): InsertVerificationRecordRow {
   return {
     verificationStatus: 'VERIFIED',
-    verifiedAt: new Date('2026-02-01T00:00:00.000Z'),
+    verifiedAt: new Date('2026-01-15T00:00:00.000Z'),
     sampleFlag: true,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -257,6 +259,38 @@ export function createEvidenceRelationship(overrides: {
   targetEvidenceId: string;
   relationshipType: InsertEvidenceRelationshipRow['relationshipType'];
 }): InsertEvidenceRelationshipRow {
+  return {
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+export function createUser(
+  overrides: Partial<InsertUserRow> & {
+    id: string;
+    email: string;
+    name: string;
+    role: InsertUserRow['role'];
+    passwordHash: string;
+  },
+): InsertUserRow {
+  return {
+    status: 'ACTIVE',
+    sampleFlag: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+export function createWorkspaceMembership(
+  overrides: Partial<InsertWorkspaceMembershipRow> & {
+    id: string;
+    workspaceId: string;
+    userId: string;
+    role: InsertWorkspaceMembershipRow['role'];
+  },
+): InsertWorkspaceMembershipRow {
   return {
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,

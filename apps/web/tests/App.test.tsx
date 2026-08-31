@@ -1,10 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import App from '../src/App.js';
 
-describe('Web Application - Landing Page Boot & Render', () => {
-  it('renders the SIH26019 title and platform description', () => {
+// Mock global fetch for initial /api/v1/auth/me check
+vi.stubGlobal(
+  'fetch',
+  vi.fn().mockResolvedValue({
+    json: async () => ({ success: false }),
+  }),
+);
+
+describe('Web Application - Boot & Render', () => {
+  it('renders the SIH26019 title and Phase 4 authentication interface', () => {
     render(<App />);
 
     // Verify main brand badge & title
@@ -16,23 +24,24 @@ describe('Web Application - Landing Page Boot & Render', () => {
       }),
     ).toBeInTheDocument();
 
-    // Verify Phase 1 status section
+    // Verify Phase 4 status card
     expect(
       screen.getByRole('heading', {
         level: 2,
-        name: /Phase 1 — Shared Contracts Foundation Initialized/i,
+        name: /Phase 4 — Authentication, RBAC & Security Baseline/i,
       }),
     ).toBeInTheDocument();
 
-    // Verify status description
+    // Verify Sign In form is presented when unauthenticated
     expect(
-      screen.getByText(
-        /The shared domain contract layer, validation schemas, API response envelopes/i,
-      ),
+      screen.getByRole('heading', {
+        level: 2,
+        name: /Platform Sign In/i,
+      }),
     ).toBeInTheDocument();
 
-    // Verify Architecture Version badge
-    expect(screen.getByText('v1.0')).toBeInTheDocument();
+    // Verify Demo Persona Selector is rendered
+    expect(screen.getByText(/Development Demo Persona Quick-Selector/i)).toBeInTheDocument();
   });
 
   it('renders semantic landmarks (header, main, footer)', () => {

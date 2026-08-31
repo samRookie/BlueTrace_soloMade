@@ -24,6 +24,10 @@ export interface EntityCounts {
   disputes: number;
   evidenceItems: number;
   evidenceRelationships: number;
+  users: number;
+  sessions: number;
+  auditEvents: number;
+  workspaceMemberships: number;
 }
 
 /**
@@ -77,6 +81,10 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     disputesCount,
     evidenceItemsCount,
     evidenceRelationshipsCount,
+    usersCount,
+    sessionsCount,
+    auditEventsCount,
+    workspaceMembershipsCount,
   ] = await Promise.all([
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.sources),
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.regions),
@@ -103,6 +111,12 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     database
       .select({ count: sql<number>`cast(count(*) as integer)` })
       .from(schema.evidenceRelationships),
+    database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.users),
+    database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.sessions),
+    database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.auditEvents),
+    database
+      .select({ count: sql<number>`cast(count(*) as integer)` })
+      .from(schema.workspaceMemberships),
   ]);
 
   return {
@@ -121,5 +135,9 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     disputes: disputesCount[0]?.count ?? 0,
     evidenceItems: evidenceItemsCount[0]?.count ?? 0,
     evidenceRelationships: evidenceRelationshipsCount[0]?.count ?? 0,
+    users: usersCount[0]?.count ?? 0,
+    sessions: sessionsCount[0]?.count ?? 0,
+    auditEvents: auditEventsCount[0]?.count ?? 0,
+    workspaceMemberships: workspaceMembershipsCount[0]?.count ?? 0,
   };
 }

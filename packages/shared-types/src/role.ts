@@ -1,7 +1,12 @@
 /**
- * Platform user and actor role vocabulary.
- *
- * NOTE: In Phase 1, roles are contractual vocabulary only.
- * Authentication and authorization enforcement are handled in future phases.
+ * Platform user and actor role vocabulary across the eight institutional personas.
  */
-export type Role = 'ADMIN' | 'RESEARCHER' | 'ANALYST' | 'REVIEWER' | 'PUBLISHER' | 'VIEWER';
+export type Role =
+  | 'ADMIN'
+  | 'POLICY_OFFICER'
+  | 'RESEARCHER'
+  | 'ANALYST'
+  | 'VERIFIER'
+  | 'COMMUNITY_LEAD'
+  | 'DISPUTE_MEDIATOR'
+  | 'VIEWER';

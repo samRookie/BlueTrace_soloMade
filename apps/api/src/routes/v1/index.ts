@@ -2,6 +2,9 @@ import { Router, type Request, type Response } from 'express';
 import { createRequire } from 'node:module';
 import { ARCHITECTURE_VERSION } from '@sih26019/shared-types';
 import { createSuccessResponse } from '../../utils/response.js';
+import { authRouter } from './auth.js';
+import { auditRouter } from './audit.js';
+import { workspacesRouter } from './workspaces.js';
 import { regionsRouter } from './regions.js';
 import { resourcesRouter } from './resources.js';
 import { devRouter } from './dev.js';
@@ -10,6 +13,11 @@ const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
 
 export const v1Router: Router = Router();
+
+// Mount authentication, audit, and workspace routers
+v1Router.use('/auth', authRouter);
+v1Router.use('/audit', auditRouter);
+v1Router.use('/workspaces', workspacesRouter);
 
 // Mount foundational domain routers
 v1Router.use('/regions', regionsRouter);
