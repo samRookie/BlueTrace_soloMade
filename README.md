@@ -3,190 +3,112 @@
 [![CI](https://github.com/samRookie/BlueTrace_soloMade/actions/workflows/ci.yml/badge.svg)](https://github.com/samRookie/BlueTrace_soloMade/actions/workflows/ci.yml)
 [![Architecture Version](https://img.shields.io/badge/Architecture%20Version-1.0-blue.svg)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-9.15.4-orange.svg)](https://pnpm.io/)
-
-## Project Overview
-
-The **National Land Governance Research & Policy Innovation Platform (SIH26019)** is an institutional platform designed to facilitate research, spatial data analytics, policy simulation, and decision-support for national land governance.
+[![Status](https://img.shields.io/badge/Status-Active%20Development-success.svg)](#)
 
 ---
 
-## Current Status: Phase 2 (PostgreSQL Evidence Graph & Deterministic Development Data)
+## Executive Summary
 
-> **Phase 2 — PostgreSQL Persistence Layer & Evidence Graph**  
-> **Architecture Version: 1.0**  
-> Status: **Persistence Foundation & Deterministic Seed Graph Established**
+The **National Land Governance Research & Policy Innovation Platform (SIH26019 / BlueTrace)** is an institutional, evidence-driven digital ecosystem designed to transform national land governance, coastal resource management, policy modeling, and environmental verification.
 
-Phase 2 establishes the real PostgreSQL schema, Drizzle ORM migrations, foreign-key relationships, indexes, check constraints, base data-access utilities, development data-status diagnostics, and a connected synthetic coastal/mangrove demonstration evidence graph (`sampleFlag = true`).
-
-### Phase 2 Scope Boundaries
-
-This phase explicitly **does NOT contain business dashboards or full service workflows**. The following capabilities remain reserved for future phases:
-
-- ❌ Authentication / Authorization Enforcement / Session Management
-- ❌ Dashboards & UI Exploration Modules
-- ❌ GIS Rendering Engines / Shapefile Processors (GIS layers are metadata-only)
-- ❌ Blue Carbon Scientific Equations / Automated Carbon Accounting
-- ❌ AI / LLM / Policy Recommendation Engines
-- ❌ External Government Integrations
-- ❌ Real-Person Data / Identifiable Landowner Records
+By connecting multi-source spatial observation data, empirical field measurements, legal tenure frameworks, and third-party verification protocols into a traversable **Relational Evidence Graph**, the platform empowers researchers, policymakers, administrative authorities, and local communities to make informed, transparent, and verifiable governance decisions.
 
 ---
 
-## Repository Architecture
+## Core Pillars & Functional Domains
 
 ```text
-/
-├── apps/
-│   ├── api/                 # Express HTTP API service (/health, /api/v1, /api/v1/dev)
-│   └── web/                 # React 19 + Vite accessible landing page & typed client
-│
-├── packages/
-│   ├── shared-types/        # Domain vocabulary, DTOs, API envelopes, provider interfaces
-│   ├── validation/          # Centralized validation schemas using Zod
-│   └── config/              # Centralized environment parsing & validation
-│
-├── db/
-│   ├── migrations/          # SQL migrations directory (15 relational domain tables)
-│   ├── seeds/               # Deterministic coastal/mangrove seed factories & datasets
-│   └── src/                 # Drizzle ORM schema, client, & repository base utilities
-│
-├── docs/                    # Architecture, schema, contracts, testing, boundary docs
-├── scripts/                 # Monorepo maintenance, migration, and reset utility scripts
-├── .github/workflows/       # Continuous Integration workflows
-├── .env.example             # Safe environment variable configuration template
-├── pnpm-workspace.yaml      # pnpm workspace definition
-├── tsconfig.base.json       # Base strict TypeScript compiler options
-└── package.json             # Root monorepo orchestration scripts
+┌────────────────────────────────────────────────────────────────────────┐
+│                        NATIONAL LAND GOVERNANCE                        │
+├───────────────────┬───────────────────────┬────────────────────────────┤
+│  Land Policy &    │  Blue Carbon &        │  Geospatial &              │
+│  Innovation       │  Ecosystem MRV        │  Remote Sensing            │
+├───────────────────┼───────────────────────┼────────────────────────────┤
+│  Evidence Graph   │  Tenure & Boundary    │  Institutional             │
+│  & Provenance     │  Dispute Resolution   │  Workspaces                │
+└───────────────────┴───────────────────────┴────────────────────────────┘
+```
+
+### 1. Land Policy Modeling & Regulatory Innovation
+
+- Structured digital representation of national, state, and local land policies.
+- Quantifiable environmental and governance indicators directly linked to statutory guidelines.
+- Innovation proposal tracking for community co-management and land stewardship models.
+
+### 2. Blue Carbon & Coastal Ecosystem MRV
+
+- Monitoring, Reporting, and Verification (MRV) framework tailored for coastal wetland, mangrove, and seagrass ecosystems.
+- Empirical biomass density tracking, carbon sequestration estimations, and auditable methodology records.
+- Independent third-party verification records backed by cryptographic SHA-256 integrity proofs.
+
+### 3. Geospatial & Remote Sensing Integration
+
+- Structured spatial metadata referencing satellite earth observations (e.g., Sentinel, Landsat) and official surveys.
+- Multi-tiered administrative regional boundaries spanning Country, State, District, Sub-District, and Local levels.
+- Direct association between spatial layers, restoration projects, and baseline evidence records.
+
+### 4. Relational Evidence Graph & Verifiable Provenance
+
+- Bidirectional relationship modeling (`SUPPORTS`, `DERIVED_FROM`, `REFERENCES`, `SUPERSEDES`, `CORROBORATES`, `CONTRADICTS`) between empirical data points.
+- Full provenance metadata capturing source attribution, publisher details, capture timestamps, and transformation lineage.
+- Strict isolation of authoritative institutional records from demonstration or simulation datasets via explicit sample labeling.
+
+### 5. Participatory Dispute Resolution & Land Tenure
+
+- Transparent logging and consultation mechanisms for overlapping boundary claims, tenure disputes, and community fishing rights.
+- Structured dispute lifecycle tracking from initial review to participatory resolution.
+
+### 6. Institutional Collaboration Workspaces
+
+- Contextual containers enabling inter-agency collaboration, research data sharing, and cross-departmental policy pilots.
+- Configurable visibility tiers ensuring data sovereignty and compliance.
+
+---
+
+## The Relational Evidence Graph Architecture
+
+The platform's persistence architecture connects domain entities into a cohesive, navigable network:
+
+```text
+Sources (Authoritative Catalogs & Satellite Feeds)
+   │
+   ├── Policies ───────────── Measurable Indicators
+   │     │
+   │     └── Regions ──────── GIS Layer Metadata
+   │           │
+   │           └── Restoration Projects ──────── Institutional Workspaces
+   │                 ├── Participatory Disputes
+   │                 ├── Innovation Opportunities
+   │                 └── Blue Carbon Ecosystems
+   │                           │
+   │                          Periodic MRV Records
+   │                           │
+   │                     Third-Party Verification
+   │                           │
+   │                     Cryptographic Integrity Proofs
+   │
+   └── Evidence Items
+         └── Bidirectional Evidence Relationships (Corroboration & Contradiction)
 ```
 
 ---
 
-## Prerequisites
+## System Architecture
 
-Ensure the following tools are installed on your workstation:
+The project is structured as a modular TypeScript monorepo designed for high cohesion, strict type safety, and clear boundaries:
 
-- **Node.js**: `v20.0.0` or higher (tested on Node `v22.x` and `v25.x`)
-- **pnpm**: `v9.0.0` or higher (tested on pnpm `v9.15.4`)
-- **PostgreSQL**: `v14+` or `v16+` (for live database connections; automated tests run against embedded in-process Postgres via `@electric-sql/pglite`)
-
----
-
-## Getting Started
-
-### 1. Clone & Install Dependencies
-
-```bash
-pnpm install
-```
-
-### 2. Configure Environment
-
-Copy the example environment template to create your local `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Safe local defaults are pre-configured:
-
-- `NODE_ENV=development`
-- `API_PORT=3001`
-- `WEB_PORT=5173`
-- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sih26019_dev`
+- **Web Application (`apps/web`)**: Accessible frontend user interface for land governance exploration, status monitoring, and policy presentation.
+- **API Service (`apps/api`)**: High-performance backend API providing standardized response envelopes, centralized error mapping, and diagnostic endpoints.
+- **Persistence Layer (`db/`)**: Relational PostgreSQL schema managed via Drizzle ORM, with automated migration lifecycles and deterministic seed graph engines.
+- **Shared Domain Contracts (`packages/shared-types`)**: Universal type definitions, DTOs, API envelopes, role vocabularies, and provider interfaces.
+- **Validation Engine (`packages/validation`)**: Centralized schema validation powered by Zod ensuring runtime data integrity.
+- **Configuration Core (`packages/config`)**: Strict, environment-driven configuration management.
 
 ---
 
-## Development
+## Data Integrity & Governance Principles
 
-Start both the Web client and API server concurrently in development mode:
-
-```bash
-pnpm dev
-```
-
-Or start individual services independently:
-
-```bash
-# Start Web client on http://localhost:5173
-pnpm --filter @sih26019/web dev
-
-# Start API service on http://localhost:3001
-pnpm --filter @sih26019/api dev
-```
-
-### Diagnostic & Health Endpoints
-
-When the API service is running, verify its status:
-
-```bash
-# Standard health check
-curl http://localhost:3001/health
-
-# Versioned API namespace
-curl http://localhost:3001/api/v1/health
-
-# Development diagnostic data-status (gated against production)
-curl http://localhost:3001/api/v1/dev/data-status
-```
-
----
-
-## Database Commands
-
-Database tooling is powered by Drizzle ORM, node-postgres, and PGLite:
-
-```bash
-# Check local migration files and readiness
-pnpm db:migrate:status
-
-# Run migrations against DATABASE_URL
-pnpm db:migrate
-
-# Seed deterministic coastal/mangrove demonstration dataset
-pnpm db:seed
-
-# Safely reset development database (recreate schema + migrate + seed)
-pnpm db:reset
-```
-
----
-
-## Quality & Verification Commands
-
-All quality gates are runnable from the repository root:
-
-```bash
-# Typecheck all packages with strict TypeScript compiler
-pnpm typecheck
-
-# Run ESLint across all packages and apps
-pnpm lint
-
-# Check formatting compliance with Prettier
-pnpm format:check
-
-# Auto-format all code
-pnpm format
-
-# Run all automated tests (Vitest, 53 tests across 10 suites)
-pnpm test
-
-# Build all packages and applications for production
-pnpm build
-```
-
----
-
-## Documentation
-
-Detailed documentation is available in the [`docs/`](./docs/) directory:
-
-- [`docs/database-schema.md`](./docs/database-schema.md) — PostgreSQL entity inventory, constraints, indexes, and seed graph
-- [`docs/contracts.md`](./docs/contracts.md) — Shared domain contracts, vocabulary, and provider interfaces
-- [`docs/architecture.md`](./docs/architecture.md) — Monorepo design, layer diagrams, and package boundaries
-- [`docs/development.md`](./docs/development.md) — Local developer setup and workflows
-- [`docs/environment.md`](./docs/environment.md) — Environment variables and security rules
-- [`docs/database.md`](./docs/database.md) — Database schema, migration, and seed structure
-- [`docs/testing.md`](./docs/testing.md) — Testing strategy and test suites
-- [`docs/boundaries.md`](./docs/boundaries.md) — Explicit phase boundaries and exclusions
+- **Zero Unattributed Claims**: Every evidence item, spatial boundary, or carbon estimation must trace back to a declared source and provenance record.
+- **Explicit Sample Labeling**: Non-authoritative, simulation, or development data is flagged to eliminate ambiguity with real-world administrative datasets.
+- **Cryptographic Traceability**: Verification records link directly to immutable checksums and auditing methodology standards.
+- **Referential Integrity**: Robust foreign-key relationships and domain check constraints prevent disconnected or orphan records.
