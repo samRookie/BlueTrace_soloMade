@@ -1,6 +1,7 @@
 # SIH26019 — National Land Governance Research & Policy Innovation Platform
 
 [![CI](https://github.com/sih26019/platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sih26019/platform/actions/workflows/ci.yml)
+[![Architecture Version](https://img.shields.io/badge/Architecture%20Version-1.0-blue.svg)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.15.4-orange.svg)](https://pnpm.io/)
 
@@ -10,23 +11,24 @@ The **National Land Governance Research & Policy Innovation Platform (SIH26019)*
 
 ---
 
-## Current Status: Phase 0 (Foundation)
+## Current Status: Phase 1 (Shared Domain Contracts)
 
-> **Phase 0 — Foundation & Monorepo Initialization**  
-> Status: **Under Active Development / Foundation Initialized**
+> **Phase 1 — Shared Domain Contracts & Architecture Foundation**  
+> **Architecture Version: 1.0**  
+> Status: **Under Active Development / Shared Contracts Foundation Established**
 
-Phase 0 establishes the production-grade TypeScript monorepo architecture, application shells, developer tooling, database migration scaffolding, shared packages, CI automation, and verification workflows.
+Phase 1 establishes the shared domain contract layer, DTOs, validation schemas, API response envelopes, error conventions, evidence relationship semantics, role vocabularies, provider adapter interfaces, and typed API client foundations.
 
-### Phase 0 Scope Boundaries
+### Phase 1 Scope Boundaries
 
-This phase explicitly **does NOT contain business functionality**. The following capabilities are reserved for future phases:
+This phase explicitly **does NOT contain business implementations or migrations**. The following capabilities remain reserved for future phases:
 
-- ❌ Authentication / Authorization / User Accounts
-- ❌ Land Record Repositories & Domain Entities
+- ❌ Authentication / Authorization Enforcement / Session Management
+- ❌ Land Record Repositories & Business Database Tables
 - ❌ Dashboards & Business Visualizations
-- ❌ GIS / Spatial Mapping / Geo-processing
+- ❌ GIS / Spatial Engines / Map Processing (GISAdapter is an interface only)
 - ❌ Blue Carbon & Environmental Metric Calculations
-- ❌ AI / LLM / Policy Recommendation Engines
+- ❌ AI / LLM / Policy Recommendation Engines (AIAdapter is an interface only)
 - ❌ External Government Integrations
 - ❌ Mock Business Datasets & Fake Domain Records
 
@@ -37,20 +39,20 @@ This phase explicitly **does NOT contain business functionality**. The following
 ```text
 /
 ├── apps/
-│   ├── api/                 # Express HTTP API service (exposes GET /health)
-│   └── web/                 # React 19 + Vite accessible landing page
+│   ├── api/                 # Express HTTP API service (/health, /api/v1) & error mapping
+│   └── web/                 # React 19 + Vite accessible landing page & typed client
 │
 ├── packages/
-│   ├── shared-types/        # Shared TypeScript contracts (e.g. HealthCheckResponse)
+│   ├── shared-types/        # Domain vocabulary, DTOs, API envelopes, provider interfaces
 │   ├── validation/          # Centralized validation schemas using Zod
 │   └── config/              # Centralized environment parsing & validation
 │
 ├── db/
-│   ├── migrations/          # SQL migrations directory
-│   ├── seeds/               # Database seed scaffolding (zero business data)
+│   ├── migrations/          # SQL migrations directory (0 business tables)
+│   ├── seeds/               # Database seed scaffolding (0 business records)
 │   └── src/                 # Drizzle ORM schema & client initialization
 │
-├── docs/                    # Architecture, environment, testing, and boundary docs
+├── docs/                    # Architecture, contracts, environment, testing, boundary docs
 ├── scripts/                 # Monorepo maintenance and migration utility scripts
 ├── .github/workflows/       # Continuous Integration workflows
 ├── .env.example             # Safe environment variable configuration template
@@ -127,7 +129,50 @@ Expected JSON response:
 {
   "status": "ok",
   "service": "api",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "architectureVersion": "1.0"
+}
+```
+
+Or query the versioned `/api/v1` namespace:
+
+```bash
+curl http://localhost:3001/api/v1/health
+```
+
+---
+
+## API Response Envelope Conventions
+
+### Success Envelope
+
+```json
+{
+  "success": true,
+  "data": {
+    "key": "value"
+  },
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "timestamp": "2026-08-31T12:00:00.000Z"
+  }
+}
+```
+
+### Error Envelope
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed.",
+    "details": {
+      "sourceId": ["sourceId is required"]
+    }
+  }
 }
 ```
 
@@ -170,7 +215,7 @@ pnpm db:migrate:status
 # Run migrations against DATABASE_URL
 pnpm db:migrate
 
-# Run seed scaffolding (Phase 0 contains zero business records)
+# Run seed scaffolding (Phase 1 contains zero business records)
 pnpm db:seed
 ```
 
@@ -180,7 +225,8 @@ pnpm db:seed
 
 Detailed documentation is available in the [`docs/`](./docs/) directory:
 
-- [`docs/architecture.md`](./docs/architecture.md) — Monorepo design and package boundaries
+- [`docs/contracts.md`](./docs/contracts.md) — Shared domain contracts, vocabulary, and provider interfaces
+- [`docs/architecture.md`](./docs/architecture.md) — Monorepo design, layer diagrams, and package boundaries
 - [`docs/development.md`](./docs/development.md) — Local developer setup and workflows
 - [`docs/environment.md`](./docs/environment.md) — Environment variables and security rules
 - [`docs/database.md`](./docs/database.md) — Database schema, migration, and seed structure

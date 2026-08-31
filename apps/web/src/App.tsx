@@ -1,4 +1,5 @@
 import React from 'react';
+import { ARCHITECTURE_VERSION } from '@sih26019/shared-types';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -16,30 +17,30 @@ export const App: React.FC = () => {
           <div className="status-indicator-wrapper">
             <div className="status-dot" aria-hidden="true" />
             <h2 id="status-heading" className="status-heading">
-              Foundation Phase Initialized
+              Phase 1 — Shared Contracts Foundation Initialized
             </h2>
           </div>
           <p className="status-description">
-            Core platform infrastructure and monorepo architecture are being established. This
-            technical foundation provides shared types, configuration management, schema validation,
-            database tooling, and CI automation for future platform capabilities.
+            The shared domain contract layer, validation schemas, API response envelopes, error
+            conventions, evidence relationship semantics, and provider adapter interfaces are
+            established. Future platform pillars build directly upon this stable contract baseline.
           </p>
           <div className="foundation-info-grid">
             <div className="info-box">
               <p className="info-label">Phase</p>
-              <p className="info-value">Phase 0 — Foundation</p>
+              <p className="info-value">Phase 1 — Shared Contracts</p>
             </div>
             <div className="info-box">
-              <p className="info-label">Architecture</p>
-              <p className="info-value">pnpm TypeScript Monorepo</p>
+              <p className="info-label">Architecture Version</p>
+              <p className="info-value">v{ARCHITECTURE_VERSION}</p>
             </div>
             <div className="info-box">
-              <p className="info-label">Service Layer</p>
-              <p className="info-value">HTTP API / Health Endpoint</p>
+              <p className="info-label">API Namespace</p>
+              <p className="info-value">/api/v1 &amp; /health</p>
             </div>
             <div className="info-box">
-              <p className="info-label">Database Tooling</p>
-              <p className="info-value">Drizzle ORM &amp; Migrations</p>
+              <p className="info-label">Domain Layer</p>
+              <p className="info-value">Shared Types &amp; Schemas</p>
             </div>
           </div>
         </section>
@@ -47,7 +48,7 @@ export const App: React.FC = () => {
 
       <footer className="site-footer">
         <p>SIH26019 &bull; National Land Governance Platform</p>
-        <p>Phase 0 &bull; Technical Foundation Only</p>
+        <p>Phase 1 &bull; Shared Contracts &amp; Architecture Foundation</p>
       </footer>
     </div>
   );

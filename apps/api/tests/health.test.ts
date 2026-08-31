@@ -5,7 +5,7 @@ import { createApp } from '../src/app.js';
 describe('API Service - Health Endpoint', () => {
   const app = createApp();
 
-  it('boots and responds successfully to GET /health', async () => {
+  it('boots and responds successfully to GET /health with architectureVersion', async () => {
     const response = await request(app).get('/health');
 
     expect(response.status).toBe(200);
@@ -14,6 +14,7 @@ describe('API Service - Health Endpoint', () => {
       status: 'ok',
       service: 'api',
       version: '0.1.0',
+      architectureVersion: '1.0',
     });
   });
 
@@ -25,8 +26,15 @@ describe('API Service - Health Endpoint', () => {
     expect(response.body).not.toHaveProperty('env');
   });
 
-  it('returns 404 for unknown endpoints', async () => {
+  it('returns 404 with standard error envelope for unknown endpoints', async () => {
     const response = await request(app).get('/unknown-endpoint');
     expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'The requested resource does not exist.',
+      },
+    });
   });
 });

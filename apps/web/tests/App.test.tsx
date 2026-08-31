@@ -16,20 +16,23 @@ describe('Web Application - Landing Page Boot & Render', () => {
       }),
     ).toBeInTheDocument();
 
-    // Verify foundation phase status section
+    // Verify Phase 1 status section
     expect(
       screen.getByRole('heading', {
         level: 2,
-        name: /Foundation Phase Initialized/i,
+        name: /Phase 1 — Shared Contracts Foundation Initialized/i,
       }),
     ).toBeInTheDocument();
 
     // Verify status description
     expect(
       screen.getByText(
-        /Core platform infrastructure and monorepo architecture are being established/i,
+        /The shared domain contract layer, validation schemas, API response envelopes/i,
       ),
     ).toBeInTheDocument();
+
+    // Verify Architecture Version badge
+    expect(screen.getByText('v1.0')).toBeInTheDocument();
   });
 
   it('renders semantic landmarks (header, main, footer)', () => {
