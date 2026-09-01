@@ -5,6 +5,7 @@ import {
   boolean,
   timestamp,
   numeric,
+  integer,
   uniqueIndex,
   index,
   check,
@@ -540,6 +541,30 @@ export const workspaceMemberships = pgTable(
 );
 
 /**
+ * 20. Evidence Attachments Table (Phase 5 Knowledge & Evidence Repository)
+ */
+export const evidenceAttachments = pgTable(
+  'evidence_attachments',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    evidenceId: varchar('evidence_id', { length: 64 })
+      .notNull()
+      .references(() => evidenceItems.id, { onDelete: 'cascade' }),
+    fileName: text('file_name').notNull(),
+    fileSize: integer('file_size').notNull(),
+    mimeType: varchar('mime_type', { length: 128 }).notNull(),
+    storageKey: varchar('storage_key', { length: 255 }).notNull().unique(),
+    checksumSha256: varchar('checksum_sha256', { length: 64 }),
+    sampleFlag: boolean('sample_flag').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('evidence_attachments_evidence_idx').on(table.evidenceId),
+    index('evidence_attachments_storage_idx').on(table.storageKey),
+  ],
+);
+
+/**
  * Relational Graph Definitions (Drizzle ORM Relations)
  */
 export const sourcesRelations = relations(sources, ({ many }) => ({
@@ -636,6 +661,14 @@ export const evidenceItemsRelations = relations(evidenceItems, ({ one, many }) =
   }),
   incomingRelationships: many(evidenceRelationships, {
     relationName: 'targetEvidence',
+  }),
+  attachments: many(evidenceAttachments),
+}));
+
+export const evidenceAttachmentsRelations = relations(evidenceAttachments, ({ one }) => ({
+  evidenceItem: one(evidenceItems, {
+    fields: [evidenceAttachments.evidenceId],
+    references: [evidenceItems.id],
   }),
 }));
 
@@ -777,3 +810,6 @@ export type InsertAuditEventRow = typeof auditEvents.$inferInsert;
 
 export type WorkspaceMembershipRow = typeof workspaceMemberships.$inferSelect;
 export type InsertWorkspaceMembershipRow = typeof workspaceMemberships.$inferInsert;
+
+export type EvidenceAttachmentRow = typeof evidenceAttachments.$inferSelect;
+export type InsertEvidenceAttachmentRow = typeof evidenceAttachments.$inferInsert;

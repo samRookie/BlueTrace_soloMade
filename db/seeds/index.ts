@@ -364,6 +364,28 @@ export async function seedDatabase(database: AppDatabase = db): Promise<void> {
     `[Seed Engine] Seeded ${coastalMangroveSeedData.workspaceMemberships.length} workspace memberships.`,
   );
 
+  // 18. Evidence Attachments (Phase 5 Knowledge & Evidence Repository)
+  for (const item of coastalMangroveSeedData.evidenceAttachments) {
+    await database
+      .insert(schema.evidenceAttachments)
+      .values(item)
+      .onConflictDoUpdate({
+        target: schema.evidenceAttachments.id,
+        set: {
+          evidenceId: item.evidenceId,
+          fileName: item.fileName,
+          fileSize: item.fileSize,
+          mimeType: item.mimeType,
+          storageKey: item.storageKey,
+          checksumSha256: item.checksumSha256,
+          sampleFlag: item.sampleFlag,
+        },
+      });
+  }
+  console.log(
+    `[Seed Engine] Seeded ${coastalMangroveSeedData.evidenceAttachments.length} evidence attachments.`,
+  );
+
   console.log('[Seed Engine] Deterministic seed execution completed successfully.');
 }
 

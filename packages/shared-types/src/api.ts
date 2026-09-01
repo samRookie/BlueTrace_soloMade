@@ -65,7 +65,9 @@ export interface ApiMetadata {
   page?: number;
   limit?: number;
   total?: number;
+  totalPages?: number;
   timestamp?: IsoTimestamp;
+  [key: string]: unknown;
 }
 
 /**

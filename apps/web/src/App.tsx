@@ -8,11 +8,12 @@ import { AuthProvider, useAuth } from './context/AuthContext.js';
 import { LoginForm } from './components/LoginForm.js';
 import { DemoAccountSelector } from './components/DemoAccountSelector.js';
 import { PermissionDenied } from './components/PermissionDenied.js';
+import { EvidenceExplorer } from './components/EvidenceExplorer.js';
 import { getRoleLabel } from './utils/presenters.js';
 import { getWorkspaces, getAuditEvents } from './api/client.js';
 import './App.css';
 
-type Tab = 'overview' | 'workspaces' | 'audit' | 'demo';
+type Tab = 'overview' | 'evidence' | 'workspaces' | 'audit' | 'demo';
 
 const MainApp: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -173,6 +174,22 @@ const MainApp: React.FC = () => {
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('evidence')}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  border: 'none',
+                  borderBottom:
+                    activeTab === 'evidence' ? '2px solid #0284c7' : '2px solid transparent',
+                  background: 'none',
+                  fontWeight: activeTab === 'evidence' ? 600 : 500,
+                  color: activeTab === 'evidence' ? '#0284c7' : '#64748b',
+                  cursor: 'pointer',
+                }}
+              >
+                Knowledge &amp; Evidence
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('workspaces')}
                 style={{
                   padding: '0.6rem 1.2rem',
@@ -251,6 +268,8 @@ const MainApp: React.FC = () => {
                 </div>
               </section>
             )}
+
+            {activeTab === 'evidence' && <EvidenceExplorer />}
 
             {activeTab === 'workspaces' && (
               <div

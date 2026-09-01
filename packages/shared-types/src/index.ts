@@ -13,4 +13,5 @@ export * from './role.js';
 export * from './auth.js';
 export * from './api.js';
 export * from './health.js';
+export * from './evidence.js';
 export * from './providers/index.js';

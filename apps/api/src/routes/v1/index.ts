@@ -8,6 +8,7 @@ import { workspacesRouter } from './workspaces.js';
 import { regionsRouter } from './regions.js';
 import { resourcesRouter } from './resources.js';
 import { devRouter } from './dev.js';
+import { evidenceRouter } from './evidence.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
@@ -18,6 +19,10 @@ export const v1Router: Router = Router();
 v1Router.use('/auth', authRouter);
 v1Router.use('/audit', auditRouter);
 v1Router.use('/workspaces', workspacesRouter);
+
+// Mount Phase 5 Knowledge and Evidence Repository router
+v1Router.use('/evidence', evidenceRouter);
+v1Router.use('/research', evidenceRouter);
 
 // Mount foundational domain routers
 v1Router.use('/regions', regionsRouter);

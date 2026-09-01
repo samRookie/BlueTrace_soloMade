@@ -60,6 +60,7 @@ Sources (Provenance)
 | `disputes`                 | `id`        | `project_id -> projects.id` (CASCADE)                                                          | None                     | None               | Land tenure, boundary overlap, and community disputes.          |
 | `evidence_items`           | `id`        | `source_id -> sources.id` (RESTRICT), `project_id -> projects.id`, `policy_id -> policies.id`  | None                     | None               | Discrete evidence objects (remote sensing, field samples).      |
 | `evidence_relationships`   | `id`        | `source_evidence_id -> evidence_items.id`, `target_evidence_id -> evidence_items.id` (CASCADE) | `(source, target, type)` | `source <> target` | Graph edges connecting corroborating or contradicting evidence. |
+| `evidence_attachments`     | `id`        | `evidence_id -> evidence_items.id` (CASCADE)                                                   | `storage_key`            | None               | Safe metadata for file attachments (PDF, CSV, GeoJSON, etc.).   |
 
 ---
 

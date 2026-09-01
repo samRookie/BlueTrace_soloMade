@@ -11,6 +11,12 @@ import type {
   AuditStatus,
   WorkspaceDto,
   PaginationQuery,
+  EvidenceItemDto,
+  EvidenceDetailDto,
+  EvidenceFilterQuery,
+  CreateEvidenceRequest,
+  CreateRelationshipRequest,
+  ResourceAttachmentDto,
 } from '@sih26019/shared-types';
 
 export interface ApiClientOptions extends RequestInit {
@@ -199,4 +205,80 @@ export async function getHealth(
   } catch (err) {
     return { status: 'error', message: err instanceof Error ? err.message : 'Unreachable' };
   }
+}
+
+/**
+ * Phase 5 — Knowledge and Evidence Repository API Client Methods
+ */
+export async function getEvidenceList(
+  params: EvidenceFilterQuery = {},
+  options?: ApiClientOptions,
+): Promise<ApiResponse<EvidenceItemDto[]>> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.category) searchParams.set('category', params.category);
+  if (params.sourceType) searchParams.set('sourceType', params.sourceType);
+  if (params.lifecycleStatus) searchParams.set('lifecycleStatus', params.lifecycleStatus);
+  if (params.integrityStatus) searchParams.set('integrityStatus', params.integrityStatus);
+  if (params.visibility) searchParams.set('visibility', params.visibility);
+  if (params.projectId) searchParams.set('projectId', params.projectId);
+  if (params.policyId) searchParams.set('policyId', params.policyId);
+  if (params.search) searchParams.set('search', params.search);
+
+  const query = searchParams.toString();
+  const endpoint = `/api/v1/evidence${query ? `?${query}` : ''}`;
+  return fetchApi<EvidenceItemDto[]>(endpoint, options);
+}
+
+export async function getEvidenceById(
+  id: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<EvidenceDetailDto>> {
+  return fetchApi<EvidenceDetailDto>(`/api/v1/evidence/${encodeURIComponent(id)}`, options);
+}
+
+export async function createEvidence(
+  payload: CreateEvidenceRequest,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<EvidenceDetailDto>> {
+  return fetchApi<EvidenceDetailDto>('/api/v1/evidence', {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createEvidenceRelationship(
+  sourceId: string,
+  payload: CreateRelationshipRequest,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<{ message: string }>> {
+  return fetchApi<{ message: string }>(
+    `/api/v1/evidence/${encodeURIComponent(sourceId)}/relationships`,
+    {
+      ...options,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function uploadEvidenceAttachment(
+  evidenceId: string,
+  payload: { fileName: string; mimeType: string; fileBase64: string },
+  options?: ApiClientOptions,
+): Promise<ApiResponse<ResourceAttachmentDto>> {
+  return fetchApi<ResourceAttachmentDto>(
+    `/api/v1/evidence/${encodeURIComponent(evidenceId)}/attachments`,
+    {
+      ...options,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function getAttachmentDownloadUrl(evidenceId: string, attachmentId: string): string {
+  return `/api/v1/evidence/${encodeURIComponent(evidenceId)}/attachments/${encodeURIComponent(attachmentId)}/download`;
 }

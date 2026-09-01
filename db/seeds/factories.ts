@@ -16,6 +16,7 @@ import type {
   InsertEvidenceRelationshipRow,
   InsertUserRow,
   InsertWorkspaceMembershipRow,
+  InsertEvidenceAttachmentRow,
 } from '../src/schema.js';
 
 export function createSource(
@@ -292,6 +293,23 @@ export function createWorkspaceMembership(
   },
 ): InsertWorkspaceMembershipRow {
   return {
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+export function createEvidenceAttachment(
+  overrides: Partial<InsertEvidenceAttachmentRow> & {
+    id: string;
+    evidenceId: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    storageKey: string;
+  },
+): InsertEvidenceAttachmentRow {
+  return {
+    sampleFlag: true,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   };

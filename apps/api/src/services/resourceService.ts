@@ -65,6 +65,7 @@ export class ResourceService {
       sessions: 0,
       auditEvents: 0,
       workspaceMemberships: 0,
+      evidenceAttachments: 0,
     };
 
     let sampleDataSeeded = false;

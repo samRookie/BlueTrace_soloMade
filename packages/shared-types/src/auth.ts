@@ -19,6 +19,12 @@ export type Permission =
   | 'disputes:read'
   | 'disputes:create'
   | 'disputes:resolve'
+  | 'evidence:read'
+  | 'evidence:create'
+  | 'evidence:update'
+  | 'evidence:link'
+  | 'evidence:upload'
+  | 'evidence:download'
   | 'audit:read'
   | 'admin:all';
 
