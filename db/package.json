@@ -34,13 +34,13 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.2.16",
     "@sih26019/config": "workspace:*",
     "@sih26019/shared-types": "workspace:*",
     "drizzle-orm": "^0.38.4",
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.16",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.2",
     "tsx": "^4.19.2",

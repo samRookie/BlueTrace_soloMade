@@ -81,8 +81,11 @@ export const errorHandler: ErrorRequestHandler = (
     return;
   }
 
-  // 4. Generic 500 Internal Server Error (Sanitized, no stack traces or database secrets leaked)
-  console.error(`[API Error] [${requestId || 'no-req-id'}]`, err.message);
+  // 4. Generic 500 Internal Server Error (Sanitized, no stack traces or database secrets leaked to client)
+  console.error(
+    `[API Error] [${requestId || 'no-req-id'}]`,
+    err instanceof Error ? err.stack || err.message : err,
+  );
   res
     .status(500)
     .json(
