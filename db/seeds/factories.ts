@@ -17,6 +17,7 @@ import type {
   InsertUserRow,
   InsertWorkspaceMembershipRow,
   InsertEvidenceAttachmentRow,
+  InsertDatasetMetadataRow,
 } from '../src/schema.js';
 
 export function createSource(
@@ -311,6 +312,25 @@ export function createEvidenceAttachment(
   return {
     sampleFlag: true,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+export function createDatasetMetadata(
+  overrides: Partial<InsertDatasetMetadataRow> & {
+    id: string;
+    evidenceId: string;
+    datasetType: InsertDatasetMetadataRow['datasetType'];
+    technicalFormat: InsertDatasetMetadataRow['technicalFormat'];
+    updateFrequency: InsertDatasetMetadataRow['updateFrequency'];
+  },
+): InsertDatasetMetadataRow {
+  return {
+    accessLevel: 'OPEN',
+    tags: [],
+    sampleFlag: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   };
 }

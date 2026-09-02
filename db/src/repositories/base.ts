@@ -29,6 +29,7 @@ export interface EntityCounts {
   auditEvents: number;
   workspaceMemberships: number;
   evidenceAttachments: number;
+  datasetMetadata: number;
 }
 
 /**
@@ -87,6 +88,7 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     auditEventsCount,
     workspaceMembershipsCount,
     evidenceAttachmentsCount,
+    datasetMetadataCount,
   ] = await Promise.all([
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.sources),
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.regions),
@@ -122,6 +124,7 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     database
       .select({ count: sql<number>`cast(count(*) as integer)` })
       .from(schema.evidenceAttachments),
+    database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.datasetMetadata),
   ]);
 
   return {
@@ -145,5 +148,6 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     auditEvents: auditEventsCount[0]?.count ?? 0,
     workspaceMemberships: workspaceMembershipsCount[0]?.count ?? 0,
     evidenceAttachments: evidenceAttachmentsCount[0]?.count ?? 0,
+    datasetMetadata: datasetMetadataCount[0]?.count ?? 0,
   };
 }

@@ -25,6 +25,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'evidence:link',
     'evidence:upload',
     'evidence:download',
+    'dataset:read',
+    'dataset:create',
+    'dataset:update',
+    'dataset:download',
     'audit:read',
     'admin:all',
   ],
@@ -46,6 +50,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'evidence:link',
     'evidence:upload',
     'evidence:download',
+    'dataset:read',
+    'dataset:create',
+    'dataset:update',
+    'dataset:download',
     'audit:read',
   ],
   RESEARCHER: [
@@ -65,6 +73,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'evidence:link',
     'evidence:upload',
     'evidence:download',
+    'dataset:read',
+    'dataset:create',
+    'dataset:update',
+    'dataset:download',
   ],
   ANALYST: [
     'auth:login',
@@ -80,6 +92,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'evidence:link',
     'evidence:upload',
     'evidence:download',
+    'dataset:read',
+    'dataset:create',
+    'dataset:update',
+    'dataset:download',
   ],
   VERIFIER: [
     'auth:login',
@@ -91,6 +107,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'projects:verify',
     'evidence:read',
     'evidence:download',
+    'dataset:read',
+    'dataset:download',
     'audit:read',
   ],
   COMMUNITY_LEAD: [
@@ -105,6 +123,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'disputes:create',
     'evidence:read',
     'evidence:download',
+    'dataset:read',
+    'dataset:download',
   ],
   DISPUTE_MEDIATOR: [
     'auth:login',
@@ -117,6 +137,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'disputes:resolve',
     'evidence:read',
     'evidence:download',
+    'dataset:read',
+    'dataset:download',
     'audit:read',
   ],
   VIEWER: [
@@ -128,6 +150,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'projects:read',
     'evidence:read',
     'evidence:download',
+    'dataset:read',
+    'dataset:download',
   ],
 };
 

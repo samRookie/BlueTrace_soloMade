@@ -63,6 +63,12 @@ By connecting multi-source spatial observation data, empirical field measurement
 - Contextual containers enabling inter-agency collaboration, research data sharing, and cross-departmental policy pilots.
 - Configurable visibility tiers ensuring data sovereignty and compliance.
 
+### 7. Dataset Catalog & Storage (Pillar 2)
+
+- Discoverable repository for reusable evidence assets across Land, Climate, Remote Sensing, Socioeconomic, and Blue Carbon categories.
+- Enforced access policies (`OPEN`, `CONTROLLED`, `REQUEST_REQUIRED`, `RESTRICTED`) with institutional role evaluation and audit logging.
+- Spatial and temporal coverage metadata, GIS layer references, file attachments with SHA-256 integrity checks, and direct integration with the Evidence Graph.
+
 ---
 
 ## The Relational Evidence Graph Architecture

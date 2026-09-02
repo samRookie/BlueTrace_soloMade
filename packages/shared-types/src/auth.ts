@@ -25,6 +25,10 @@ export type Permission =
   | 'evidence:link'
   | 'evidence:upload'
   | 'evidence:download'
+  | 'dataset:read'
+  | 'dataset:create'
+  | 'dataset:update'
+  | 'dataset:download'
   | 'audit:read'
   | 'admin:all';
 

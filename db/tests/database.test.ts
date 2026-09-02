@@ -65,6 +65,7 @@ describe('Phase 2 PostgreSQL Evidence Graph & Persistence Layer', () => {
       expect(counts.evidenceItems).toBe(0);
       expect(counts.evidenceRelationships).toBe(0);
       expect(counts.evidenceAttachments).toBe(0);
+      expect(counts.datasetMetadata).toBe(0);
     });
   });
 
@@ -86,9 +87,10 @@ describe('Phase 2 PostgreSQL Evidence Graph & Persistence Layer', () => {
       expect(counts.verificationRecords).toBe(1);
       expect(counts.integrityRecords).toBe(1);
       expect(counts.disputes).toBe(1);
-      expect(counts.evidenceItems).toBe(8);
-      expect(counts.evidenceRelationships).toBe(5);
-      expect(counts.evidenceAttachments).toBe(4);
+      expect(counts.evidenceItems).toBe(12);
+      expect(counts.evidenceRelationships).toBe(7);
+      expect(counts.evidenceAttachments).toBe(7);
+      expect(counts.datasetMetadata).toBe(5);
     });
 
     it('is idempotent when seed is executed multiple times', async () => {

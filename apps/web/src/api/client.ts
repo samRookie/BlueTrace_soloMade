@@ -17,6 +17,11 @@ import type {
   CreateEvidenceRequest,
   CreateRelationshipRequest,
   ResourceAttachmentDto,
+  DatasetItemDto,
+  DatasetDetailDto,
+  DatasetFilterQuery,
+  CreateDatasetRequest,
+  UpdateDatasetRequest,
 } from '@sih26019/shared-types';
 
 export interface ApiClientOptions extends RequestInit {
@@ -281,4 +286,80 @@ export async function uploadEvidenceAttachment(
 
 export function getAttachmentDownloadUrl(evidenceId: string, attachmentId: string): string {
   return `/api/v1/evidence/${encodeURIComponent(evidenceId)}/attachments/${encodeURIComponent(attachmentId)}/download`;
+}
+
+/**
+ * Phase 6 Dataset Catalog and Storage API Client Methods
+ */
+export async function getDatasets(
+  params: DatasetFilterQuery = {},
+  options?: ApiClientOptions,
+): Promise<ApiResponse<DatasetItemDto[]>> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.type) searchParams.set('type', params.type);
+  if (params.format) searchParams.set('format', params.format);
+  if (params.accessLevel) searchParams.set('accessLevel', params.accessLevel);
+  if (params.updateFrequency) searchParams.set('updateFrequency', params.updateFrequency);
+  if (params.regionId) searchParams.set('regionId', params.regionId);
+  if (params.sourceId) searchParams.set('sourceId', params.sourceId);
+  if (params.tag) searchParams.set('tag', params.tag);
+  if (params.lifecycleStatus) searchParams.set('lifecycleStatus', params.lifecycleStatus);
+  if (params.integrityStatus) searchParams.set('integrityStatus', params.integrityStatus);
+  if (params.visibility) searchParams.set('visibility', params.visibility);
+  if (params.q) searchParams.set('q', params.q);
+
+  const query = searchParams.toString();
+  const endpoint = `/api/v1/datasets${query ? `?${query}` : ''}`;
+  return fetchApi<DatasetItemDto[]>(endpoint, options);
+}
+
+export async function getDatasetById(
+  id: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<DatasetDetailDto>> {
+  return fetchApi<DatasetDetailDto>(`/api/v1/datasets/${encodeURIComponent(id)}`, options);
+}
+
+export async function createDataset(
+  payload: CreateDatasetRequest,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<DatasetDetailDto>> {
+  return fetchApi<DatasetDetailDto>('/api/v1/datasets', {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateDataset(
+  id: string,
+  payload: UpdateDatasetRequest,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<DatasetDetailDto>> {
+  return fetchApi<DatasetDetailDto>(`/api/v1/datasets/${encodeURIComponent(id)}`, {
+    ...options,
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function uploadDatasetAttachment(
+  datasetId: string,
+  payload: { fileName: string; mimeType: string; fileBase64: string },
+  options?: ApiClientOptions,
+): Promise<ApiResponse<ResourceAttachmentDto>> {
+  return fetchApi<ResourceAttachmentDto>(
+    `/api/v1/datasets/${encodeURIComponent(datasetId)}/attachments`,
+    {
+      ...options,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function getDatasetDownloadUrl(datasetId: string, attachmentId: string): string {
+  return `/api/v1/datasets/${encodeURIComponent(datasetId)}/attachments/${encodeURIComponent(attachmentId)}/download`;
 }

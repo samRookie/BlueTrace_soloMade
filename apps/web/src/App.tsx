@@ -9,11 +9,12 @@ import { LoginForm } from './components/LoginForm.js';
 import { DemoAccountSelector } from './components/DemoAccountSelector.js';
 import { PermissionDenied } from './components/PermissionDenied.js';
 import { EvidenceExplorer } from './components/EvidenceExplorer.js';
+import { DatasetCatalog } from './components/DatasetCatalog.js';
 import { getRoleLabel } from './utils/presenters.js';
 import { getWorkspaces, getAuditEvents } from './api/client.js';
 import './App.css';
 
-type Tab = 'overview' | 'evidence' | 'workspaces' | 'audit' | 'demo';
+type Tab = 'overview' | 'datasets' | 'evidence' | 'workspaces' | 'audit' | 'demo';
 
 const MainApp: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -174,6 +175,22 @@ const MainApp: React.FC = () => {
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('datasets')}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  border: 'none',
+                  borderBottom:
+                    activeTab === 'datasets' ? '2px solid #0284c7' : '2px solid transparent',
+                  background: 'none',
+                  fontWeight: activeTab === 'datasets' ? 600 : 500,
+                  color: activeTab === 'datasets' ? '#0284c7' : '#64748b',
+                  cursor: 'pointer',
+                }}
+              >
+                Dataset Catalog
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('evidence')}
                 style={{
                   padding: '0.6rem 1.2rem',
@@ -268,6 +285,8 @@ const MainApp: React.FC = () => {
                 </div>
               </section>
             )}
+
+            {activeTab === 'datasets' && <DatasetCatalog />}
 
             {activeTab === 'evidence' && <EvidenceExplorer />}
 

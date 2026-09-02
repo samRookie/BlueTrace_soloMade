@@ -9,6 +9,7 @@ import { regionsRouter } from './regions.js';
 import { resourcesRouter } from './resources.js';
 import { devRouter } from './dev.js';
 import { evidenceRouter } from './evidence.js';
+import { datasetsRouter } from './datasets.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
@@ -23,6 +24,9 @@ v1Router.use('/workspaces', workspacesRouter);
 // Mount Phase 5 Knowledge and Evidence Repository router
 v1Router.use('/evidence', evidenceRouter);
 v1Router.use('/research', evidenceRouter);
+
+// Mount Phase 6 Dataset Catalog and Storage router
+v1Router.use('/datasets', datasetsRouter);
 
 // Mount foundational domain routers
 v1Router.use('/regions', regionsRouter);

@@ -14,4 +14,5 @@ export * from './auth.js';
 export * from './api.js';
 export * from './health.js';
 export * from './evidence.js';
+export * from './dataset.js';
 export * from './providers/index.js';

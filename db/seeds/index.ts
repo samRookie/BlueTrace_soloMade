@@ -386,6 +386,34 @@ export async function seedDatabase(database: AppDatabase = db): Promise<void> {
     `[Seed Engine] Seeded ${coastalMangroveSeedData.evidenceAttachments.length} evidence attachments.`,
   );
 
+  // 19. Dataset Metadata (Phase 6 Dataset Catalog & Storage)
+  for (const item of coastalMangroveSeedData.datasetMetadata) {
+    await database
+      .insert(schema.datasetMetadata)
+      .values(item)
+      .onConflictDoUpdate({
+        target: schema.datasetMetadata.evidenceId,
+        set: {
+          datasetType: item.datasetType,
+          technicalFormat: item.technicalFormat,
+          updateFrequency: item.updateFrequency,
+          accessLevel: item.accessLevel,
+          spatialCoverageSummary: item.spatialCoverageSummary,
+          temporalCoverageStart: item.temporalCoverageStart,
+          temporalCoverageEnd: item.temporalCoverageEnd,
+          periodType: item.periodType,
+          regionId: item.regionId,
+          gisLayerId: item.gisLayerId,
+          tags: item.tags,
+          sampleFlag: item.sampleFlag,
+          updatedAt: new Date(),
+        },
+      });
+  }
+  console.log(
+    `[Seed Engine] Seeded ${coastalMangroveSeedData.datasetMetadata.length} dataset metadata records.`,
+  );
+
   console.log('[Seed Engine] Deterministic seed execution completed successfully.');
 }
 

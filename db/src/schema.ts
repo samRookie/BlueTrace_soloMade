@@ -6,6 +6,7 @@ import {
   timestamp,
   numeric,
   integer,
+  jsonb,
   uniqueIndex,
   index,
   check,
@@ -22,6 +23,11 @@ import type {
   Role,
   UserStatus,
   AuditStatus,
+  DatasetType,
+  DatasetTechnicalFormat,
+  DatasetUpdateFrequency,
+  DatasetAccessLevel,
+  PeriodType,
 } from '@sih26019/shared-types';
 
 /**
@@ -565,6 +571,57 @@ export const evidenceAttachments = pgTable(
 );
 
 /**
+ * 21. Dataset Metadata Table (Phase 6 Dataset Catalog & Storage)
+ */
+export const datasetMetadata = pgTable(
+  'dataset_metadata',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    evidenceId: varchar('evidence_id', { length: 64 })
+      .notNull()
+      .unique()
+      .references(() => evidenceItems.id, { onDelete: 'cascade' }),
+    datasetType: varchar('dataset_type', { length: 32 }).$type<DatasetType>().notNull(),
+    technicalFormat: varchar('technical_format', { length: 32 })
+      .$type<DatasetTechnicalFormat>()
+      .notNull(),
+    updateFrequency: varchar('update_frequency', { length: 32 })
+      .$type<DatasetUpdateFrequency>()
+      .notNull(),
+    accessLevel: varchar('access_level', { length: 32 })
+      .$type<DatasetAccessLevel>()
+      .notNull()
+      .default('OPEN'),
+    spatialCoverageSummary: text('spatial_coverage_summary'),
+    temporalCoverageStart: timestamp('temporal_coverage_start', { withTimezone: true }),
+    temporalCoverageEnd: timestamp('temporal_coverage_end', { withTimezone: true }),
+    periodType: varchar('period_type', { length: 32 }).$type<PeriodType>(),
+    regionId: varchar('region_id', { length: 64 }).references(() => regions.id, {
+      onDelete: 'set null',
+    }),
+    gisLayerId: varchar('gis_layer_id', { length: 64 }).references(() => gisLayers.id, {
+      onDelete: 'set null',
+    }),
+    tags: jsonb('tags')
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    sampleFlag: boolean('sample_flag').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('dataset_metadata_evidence_idx').on(table.evidenceId),
+    index('dataset_metadata_type_idx').on(table.datasetType),
+    index('dataset_metadata_format_idx').on(table.technicalFormat),
+    index('dataset_metadata_access_idx').on(table.accessLevel),
+    index('dataset_metadata_frequency_idx').on(table.updateFrequency),
+    index('dataset_metadata_region_idx').on(table.regionId),
+    index('dataset_metadata_gis_idx').on(table.gisLayerId),
+  ],
+);
+
+/**
  * Relational Graph Definitions (Drizzle ORM Relations)
  */
 export const sourcesRelations = relations(sources, ({ many }) => ({
@@ -663,6 +720,22 @@ export const evidenceItemsRelations = relations(evidenceItems, ({ one, many }) =
     relationName: 'targetEvidence',
   }),
   attachments: many(evidenceAttachments),
+  datasetMetadata: one(datasetMetadata),
+}));
+
+export const datasetMetadataRelations = relations(datasetMetadata, ({ one }) => ({
+  evidenceItem: one(evidenceItems, {
+    fields: [datasetMetadata.evidenceId],
+    references: [evidenceItems.id],
+  }),
+  region: one(regions, {
+    fields: [datasetMetadata.regionId],
+    references: [regions.id],
+  }),
+  gisLayer: one(gisLayers, {
+    fields: [datasetMetadata.gisLayerId],
+    references: [gisLayers.id],
+  }),
 }));
 
 export const evidenceAttachmentsRelations = relations(evidenceAttachments, ({ one }) => ({
@@ -813,3 +886,6 @@ export type InsertWorkspaceMembershipRow = typeof workspaceMemberships.$inferIns
 
 export type EvidenceAttachmentRow = typeof evidenceAttachments.$inferSelect;
 export type InsertEvidenceAttachmentRow = typeof evidenceAttachments.$inferInsert;
+
+export type DatasetMetadataRow = typeof datasetMetadata.$inferSelect;
+export type InsertDatasetMetadataRow = typeof datasetMetadata.$inferInsert;

@@ -64,28 +64,34 @@ Database (PostgreSQL Connection Pool)
 
 All business routes reside under the `/api/v1` namespace.
 
-| Method | Route                                              | Description                              | Auth / Permission     | Parameters / Body                                 |
-| :----- | :------------------------------------------------- | :--------------------------------------- | :-------------------- | :------------------------------------------------ |
-| `GET`  | `/health`                                          | Unversioned health probe                 | Public                | None                                              |
-| `GET`  | `/api/v1/health`                                   | Standard versioned health check          | Public                | None                                              |
-| `GET`  | `/api/v1/version`                                  | Platform baseline and environment info   | Public                | None                                              |
-| `POST` | `/api/v1/auth/login`                               | Authenticate user & issue session cookie | Public (Rate Limited) | `{ email, password }`                             |
-| `POST` | `/api/v1/auth/logout`                              | Revoke session & clear cookie            | Authenticated         | None                                              |
-| `GET`  | `/api/v1/auth/me`                                  | Current authenticated user profile       | Authenticated         | None                                              |
-| `GET`  | `/api/v1/audit/events`                             | Compliance security audit log            | `audit:read`          | `page`, `pageSize`, `actorId`, `action`, `status` |
-| `GET`  | `/api/v1/workspaces`                               | Accessible user workspaces               | Authenticated         | `page`, `pageSize`                                |
-| `GET`  | `/api/v1/workspaces/:id`                           | Single workspace by ID (IDOR protected)  | Authenticated         | `id` in path                                      |
-| `GET`  | `/api/v1/regions`                                  | Paginated administrative regions         | Public / Base         | `page`, `pageSize`, `level`, `search`             |
-| `GET`  | `/api/v1/regions/:id`                              | Single region by ID                      | Public / Base         | `id` in path                                      |
-| `GET`  | `/api/v1/resources/counts`                         | Aggregated entity counts                 | Public / Base         | None                                              |
-| `GET`  | `/api/v1/evidence`                                 | List & discover evidence resources       | Public / Filtered     | None (Filtered by persona visibility)             |
-| `GET`  | `/api/v1/research`                                 | Alias for `/api/v1/evidence`             | Public / Filtered     | None (Filtered by persona visibility)             |
-| `POST` | `/api/v1/evidence`                                 | Register new evidence item               | Authenticated         | `evidence:create`                                 |
-| `GET`  | `/api/v1/evidence/:id`                             | Get evidence with graph & attachments    | Public / Filtered     | None (Gated by visibility)                        |
-| `POST` | `/api/v1/evidence/:id/relationships`               | Link related evidence items (no loops)   | Authenticated         | `evidence:link`                                   |
-| `POST` | `/api/v1/evidence/:id/attachments`                 | Safe upload & attach document (max 10MB) | Authenticated         | `evidence:upload`                                 |
-| `GET`  | `/api/v1/evidence/:id/attachments/:attId/download` | Secure streaming download of attachment  | Public / Filtered     | `evidence:download`                               |
-| `GET`  | `/api/v1/dev/data-status`                          | Database seed & readiness diagnostics    | Dev Only              | None                                              |
+| Method  | Route                                              | Description                               | Auth / Permission     | Parameters / Body                                 |
+| :------ | :------------------------------------------------- | :---------------------------------------- | :-------------------- | :------------------------------------------------ |
+| `GET`   | `/health`                                          | Unversioned health probe                  | Public                | None                                              |
+| `GET`   | `/api/v1/health`                                   | Standard versioned health check           | Public                | None                                              |
+| `GET`   | `/api/v1/version`                                  | Platform baseline and environment info    | Public                | None                                              |
+| `POST`  | `/api/v1/auth/login`                               | Authenticate user & issue session cookie  | Public (Rate Limited) | `{ email, password }`                             |
+| `POST`  | `/api/v1/auth/logout`                              | Revoke session & clear cookie             | Authenticated         | None                                              |
+| `GET`   | `/api/v1/auth/me`                                  | Current authenticated user profile        | Authenticated         | None                                              |
+| `GET`   | `/api/v1/audit/events`                             | Compliance security audit log             | `audit:read`          | `page`, `pageSize`, `actorId`, `action`, `status` |
+| `GET`   | `/api/v1/workspaces`                               | Accessible user workspaces                | Authenticated         | `page`, `pageSize`                                |
+| `GET`   | `/api/v1/workspaces/:id`                           | Single workspace by ID (IDOR protected)   | Authenticated         | `id` in path                                      |
+| `GET`   | `/api/v1/regions`                                  | Paginated administrative regions          | Public / Base         | `page`, `pageSize`, `level`, `search`             |
+| `GET`   | `/api/v1/regions/:id`                              | Single region by ID                       | Public / Base         | `id` in path                                      |
+| `GET`   | `/api/v1/resources/counts`                         | Aggregated entity counts                  | Public / Base         | None                                              |
+| `GET`   | `/api/v1/evidence`                                 | List & discover evidence resources        | Public / Filtered     | None (Filtered by persona visibility)             |
+| `GET`   | `/api/v1/research`                                 | Alias for `/api/v1/evidence`              | Public / Filtered     | None (Filtered by persona visibility)             |
+| `POST`  | `/api/v1/evidence`                                 | Register new evidence item                | Authenticated         | `evidence:create`                                 |
+| `GET`   | `/api/v1/evidence/:id`                             | Get evidence with graph & attachments     | Public / Filtered     | None (Gated by visibility)                        |
+| `POST`  | `/api/v1/evidence/:id/relationships`               | Link related evidence items (no loops)    | Authenticated         | `evidence:link`                                   |
+| `POST`  | `/api/v1/evidence/:id/attachments`                 | Safe upload & attach document (max 10MB)  | Authenticated         | `evidence:upload`                                 |
+| `GET`   | `/api/v1/evidence/:id/attachments/:attId/download` | Secure streaming download of attachment   | Public / Filtered     | `evidence:download`                               |
+| `GET`   | `/api/v1/datasets`                                 | Search & filter dataset catalog           | Public / Filtered     | `q`, `type`, `format`, `accessLevel`, `regionId`  |
+| `GET`   | `/api/v1/datasets/:id`                             | Get dataset detail with metadata & links  | Public / Filtered     | `id` in path                                      |
+| `POST`  | `/api/v1/datasets`                                 | Register specialized dataset entry        | Authenticated         | `dataset:create`                                  |
+| `PATCH` | `/api/v1/datasets/:id`                             | Update dataset metadata & attributes      | Authenticated         | `dataset:update`                                  |
+| `POST`  | `/api/v1/datasets/:id/attachments`                 | Upload dataset file attachment (max 10MB) | Authenticated         | `dataset:create`                                  |
+| `GET`   | `/api/v1/datasets/:id/attachments/:attId/download` | Enforced secure download with audit trail | Gated by Access Level | `dataset:download`                                |
+| `GET`   | `/api/v1/dev/data-status`                          | Database seed & readiness diagnostics     | Dev Only              | None                                              |
 
 ---
 
