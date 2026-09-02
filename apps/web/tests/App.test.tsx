@@ -11,8 +11,8 @@ vi.stubGlobal(
   }),
 );
 
-describe('Web Application - Boot & Render', () => {
-  it('renders the SIH26019 title and Phase 4 authentication interface', async () => {
+describe('Web Application - Direct Access Boot & Render', () => {
+  it('renders the SIH26019 title and direct access navigation tabs', async () => {
     render(<App />);
 
     await waitFor(() => {
@@ -25,24 +25,20 @@ describe('Web Application - Boot & Render', () => {
         }),
       ).toBeInTheDocument();
 
-      // Verify Phase 4 status card
+      // Verify direct access persona welcome banner
       expect(
         screen.getByRole('heading', {
           level: 2,
-          name: /Phase 4 — Authentication, RBAC & Security Baseline/i,
+          name: /Welcome, Admin User/i,
         }),
       ).toBeInTheDocument();
 
-      // Verify Sign In form is presented when unauthenticated
-      expect(
-        screen.getByRole('heading', {
-          level: 2,
-          name: /Platform Sign In/i,
-        }),
-      ).toBeInTheDocument();
-
-      // Verify Demo Persona Selector is rendered
-      expect(screen.getByText(/Development Demo Persona Quick-Selector/i)).toBeInTheDocument();
+      // Verify direct access tabs
+      expect(screen.getByRole('button', { name: /Platform Overview/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Dataset Catalog/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Knowledge & Evidence/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /My Workspaces/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Security Audit Trail/i })).toBeInTheDocument();
     });
   });
 

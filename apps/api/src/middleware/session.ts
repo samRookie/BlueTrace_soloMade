@@ -12,10 +12,29 @@ declare global {
   }
 }
 
+import { defaultUserRepository } from '../repositories/userRepository.js';
+
 export const SESSION_COOKIE_NAME = 'bluetrace_session';
 
+export const DEFAULT_USER: AuthenticatedUser = {
+  id: 'SAMPLE-USR-001',
+  email: 'admin@bluetrace.gov.in',
+  name: 'Admin User',
+  role: 'ADMIN',
+  status: 'ACTIVE',
+  sampleFlag: true,
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
+
+export const DEFAULT_SESSION: AuthSession = {
+  id: 'SAMPLE-SES-001',
+  userId: 'SAMPLE-USR-001',
+  expiresAt: new Date(Date.now() + 86400000 * 365).toISOString(),
+  createdAt: new Date().toISOString(),
+};
+
 /**
- * Extracts session tokens from cookies or Authorization Bearer header and attaches user context.
+ * Extracts session tokens from cookies or Authorization Bearer header, or defaults to active admin persona.
  */
 export async function sessionMiddleware(
   req: Request,
@@ -52,6 +71,29 @@ export async function sessionMiddleware(
         req.user = result.user;
         req.session = result.session;
       }
+    }
+
+    // 3. Direct access persona header fallback (e.g., from web UI)
+    const personaEmail = req.headers['x-persona-email'] as string | undefined;
+    const isDirectAccess = req.headers['x-direct-access'] === 'true';
+
+    if (!req.user && personaEmail) {
+      const dbUser = await defaultUserRepository.findByEmail(personaEmail);
+      if (dbUser) {
+        req.user = {
+          id: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name,
+          role: dbUser.role,
+          status: dbUser.status,
+          sampleFlag: dbUser.sampleFlag,
+          createdAt: dbUser.createdAt.toISOString(),
+        };
+        req.session = DEFAULT_SESSION;
+      }
+    } else if (!req.user && isDirectAccess) {
+      req.user = DEFAULT_USER;
+      req.session = DEFAULT_SESSION;
     }
 
     next();

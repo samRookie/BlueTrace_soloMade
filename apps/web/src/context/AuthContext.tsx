@@ -6,8 +6,13 @@ import React, {
   useCallback,
   type ReactNode,
 } from 'react';
-import type { AuthenticatedUser, LoginRequest, Role } from '@sih26019/shared-types';
-import { login as apiLogin, logout as apiLogout, getCurrentUser } from '../api/client.js';
+import type { AuthenticatedUser, LoginRequest } from '@sih26019/shared-types';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  getCurrentUser,
+  setActivePersonaEmail,
+} from '../api/client.js';
 
 export interface AuthContextType {
   user: AuthenticatedUser | null;
@@ -25,25 +30,29 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 import { DEMO_PASSWORD, DEMO_PERSONAS, type DemoPersona } from '../constants/personas.js';
 export { DEMO_PASSWORD, DEMO_PERSONAS, type DemoPersona };
 
+export const DEFAULT_ACTIVE_USER: AuthenticatedUser = {
+  id: 'SAMPLE-USR-001',
+  email: 'admin@bluetrace.gov.in',
+  name: 'Admin User',
+  role: 'ADMIN',
+  status: 'ACTIVE',
+  sampleFlag: true,
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthenticatedUser | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<AuthenticatedUser>(DEFAULT_ACTIVE_USER);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
     try {
       const result = await getCurrentUser();
-      if (result.success) {
+      if (result.success && result.data?.user) {
         setUser(result.data.user);
-      } else {
-        setUser(null);
       }
     } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
+      // Keep default active persona
     }
   }, []);
 
@@ -72,16 +81,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const demoLogin = async (email: string): Promise<boolean> => {
-    return login({ email, password: DEMO_PASSWORD });
+    setActivePersonaEmail(email);
+    const persona = DEMO_PERSONAS.find((p) => p.email === email);
+    if (persona) {
+      setUser({
+        id: `SAMPLE-USR-${persona.role}`,
+        email: persona.email,
+        name: persona.name,
+        role: persona.role,
+        status: 'ACTIVE',
+        sampleFlag: true,
+        createdAt: '2026-01-01T00:00:00.000Z',
+      });
+    }
+    try {
+      await apiLogin({ email, password: DEMO_PASSWORD });
+    } catch {
+      // Direct access continues
+    }
+    return true;
   };
 
   const logout = async (): Promise<void> => {
-    setIsLoading(true);
+    setActivePersonaEmail(DEFAULT_ACTIVE_USER.email);
     try {
       await apiLogout();
-      setUser(null);
     } finally {
-      setIsLoading(false);
+      setUser(DEFAULT_ACTIVE_USER);
     }
   };
 

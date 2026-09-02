@@ -49,6 +49,16 @@ export class NetworkError extends Error {
   }
 }
 
+let activePersonaEmail = 'admin@bluetrace.gov.in';
+
+export function setActivePersonaEmail(email: string): void {
+  activePersonaEmail = email;
+}
+
+export function getActivePersonaEmail(): string {
+  return activePersonaEmail;
+}
+
 /**
  * Standard typed API request helper for web application components.
  */
@@ -62,6 +72,8 @@ export async function fetchApi<T>(
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
+    'X-Direct-Access': 'true',
+    'X-Persona-Email': activePersonaEmail,
     ...(options.headers || {}),
   };
 
