@@ -124,6 +124,9 @@ importers:
 
   db:
     dependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.2.16
+        version: 0.2.17
       '@sih26019/config':
         specifier: workspace:*
         version: link:../packages/config
@@ -137,9 +140,6 @@ importers:
         specifier: ^8.13.1
         version: 8.23.0
     devDependencies:
-      '@electric-sql/pglite':
-        specifier: ^0.2.16
-        version: 0.2.17
       '@types/pg':
         specifier: ^8.11.11
         version: 8.23.1
