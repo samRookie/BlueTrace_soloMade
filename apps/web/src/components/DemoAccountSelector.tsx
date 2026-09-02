@@ -1,5 +1,6 @@
 import React from 'react';
-import { useAuth, DEMO_PERSONAS } from '../context/AuthContext.js';
+import { useAuth } from '../context/AuthContext.js';
+import { DEMO_PERSONAS } from '../constants/personas.js';
 import { getRoleLabel } from '../utils/presenters.js';
 
 export function DemoAccountSelector() {
