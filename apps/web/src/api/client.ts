@@ -72,14 +72,69 @@ export async function fetchApi<T>(
       credentials: options.credentials || 'include',
     });
 
-    const body = (await response.json()) as ApiResponse<T>;
-    return body;
+    if (typeof response.json === 'function') {
+      try {
+        const body = (await response.json()) as ApiResponse<T>;
+        return body;
+      } catch {
+        // Fall through to text parsing if json() fails (e.g. empty 404 response)
+      }
+    }
+
+    if (typeof response.text === 'function') {
+      const text = await response.text();
+      if (!text) {
+        if (!response.ok) {
+          return {
+            success: false,
+            error: {
+              code: response.status === 404 ? 'NOT_FOUND' : 'INTERNAL_ERROR',
+              message:
+                response.status === 404
+                  ? `API endpoint "${url}" was not found (HTTP 404). Ensure the backend API server is running on port 3001.`
+                  : `Server returned HTTP ${response.status} with empty response body.`,
+            },
+          };
+        }
+        return {
+          success: true,
+          data: {} as T,
+        };
+      }
+
+      try {
+        const body = JSON.parse(text) as ApiResponse<T>;
+        return body;
+      } catch {
+        return {
+          success: false,
+          error: {
+            code: response.status === 404 ? 'NOT_FOUND' : 'INTERNAL_ERROR',
+            message:
+              response.status === 404
+                ? `API endpoint "${url}" was not found (HTTP 404). Ensure backend server is running.`
+                : `Received non-JSON response from server (HTTP ${response.status}): ${text.slice(0, 120)}`,
+          },
+        };
+      }
+    }
+
+    return {
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Unsupported response format from server.',
+      },
+    };
   } catch (error) {
     return {
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error instanceof Error ? error.message : 'Network request failed',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Network connection failed. Ensure the API server is running.',
       },
     };
   }
