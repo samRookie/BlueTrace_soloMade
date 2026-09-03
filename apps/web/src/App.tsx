@@ -9,6 +9,7 @@ import { DemoAccountSelector } from './components/DemoAccountSelector.js';
 import { PermissionDenied } from './components/PermissionDenied.js';
 import { EvidenceExplorer } from './components/EvidenceExplorer.js';
 import { DatasetCatalog } from './components/DatasetCatalog.js';
+import { NationalDashboard } from './components/NationalDashboard.js';
 import { getRoleLabel } from './utils/presenters.js';
 import { getWorkspaces, getAuditEvents } from './api/client.js';
 import './App.css';
@@ -234,33 +235,7 @@ const MainApp: React.FC = () => {
 
           {/* Tab Contents */}
           {activeTab === 'overview' && (
-            <section className="status-card">
-              <h3 style={{ marginTop: 0, color: '#0f172a' }}>
-                Platform Security &amp; RBAC Active
-              </h3>
-              <p className="status-description">
-                All requests to protected APIs are verified on the server using encrypted session
-                tokens and permission policies.
-              </p>
-              <div className="foundation-info-grid">
-                <div className="info-box">
-                  <p className="info-label">Active Persona</p>
-                  <p className="info-value">{user ? getRoleLabel(user.role) : ''}</p>
-                </div>
-                <div className="info-box">
-                  <p className="info-label">Security Tier</p>
-                  <p className="info-value">Server-Enforced RBAC</p>
-                </div>
-                <div className="info-box">
-                  <p className="info-label">Session Transport</p>
-                  <p className="info-value">HttpOnly Cookie</p>
-                </div>
-                <div className="info-box">
-                  <p className="info-label">Audit Logging</p>
-                  <p className="info-value">Immutable Append-Only</p>
-                </div>
-              </div>
-            </section>
+            <NationalDashboard onNavigateTab={(tab) => setActiveTab(tab)} />
           )}
 
           {activeTab === 'datasets' && <DatasetCatalog />}

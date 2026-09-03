@@ -133,3 +133,58 @@ All business routes reside under the `/api/v1` namespace.
   }
 }
 ```
+
+---
+
+## 7. Analytics & National Overview Endpoints
+
+### 7.1 National Evidence & Decision Overview (`GET /api/v1/analytics/overview`)
+
+Retrieves authoritative, database-backed aggregations across all 6 platform sections (National Snapshot, Evidence Activity, Geospatial Intelligence, Policy Intelligence, Implementation, and Environmental/Blue Carbon).
+
+#### Query Parameters
+
+- `regionId` (string, optional): Filters aggregates by administrative region.
+- `periodStart` (ISO-8601 string, optional): Lower bound creation/reporting date.
+- `periodEnd` (ISO-8601 string, optional): Upper bound creation/reporting date.
+- `sampleFlag` (boolean, optional): Filter by prototype sample state.
+
+#### Success Response (`200 OK`)
+
+```json
+{
+  "success": true,
+  "data": {
+    "context": {
+      "regionId": "SAMPLE-REG-KR-001",
+      "regionName": "Coringa Mangrove Estuarine Zone",
+      "sampleFlag": true,
+      "generatedAt": "2026-09-03T12:00:00.000Z"
+    },
+    "sections": {
+      "nationalSnapshot": [
+        {
+          "key": "total_evidence_items",
+          "label": "Cataloged Evidence Items",
+          "value": 12,
+          "unit": "records",
+          "definition": "Total count of accessible evidence records across all legal, scientific, and policy categories.",
+          "source": "Knowledge & Evidence Repository",
+          "sampleFlag": true,
+          "status": "AVAILABLE",
+          "detailPath": "/evidence"
+        }
+      ],
+      "evidenceActivity": [...],
+      "geospatialIntelligence": [...],
+      "policyIntelligence": [...],
+      "implementation": [...],
+      "environmental": [...]
+    }
+  },
+  "meta": {
+    "requestId": "f0cb0fe1-48ff-40f9-96b1-a37754cd0a91",
+    "timestamp": "2026-09-03T12:00:00.000Z"
+  }
+}
+```

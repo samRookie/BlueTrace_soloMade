@@ -22,6 +22,8 @@ import type {
   DatasetFilterQuery,
   CreateDatasetRequest,
   UpdateDatasetRequest,
+  AnalyticsOverviewDto,
+  AnalyticsQuery,
 } from '@sih26019/shared-types';
 
 export interface ApiClientOptions extends RequestInit {
@@ -429,4 +431,23 @@ export async function uploadDatasetAttachment(
 
 export function getDatasetDownloadUrl(datasetId: string, attachmentId: string): string {
   return `/api/v1/datasets/${encodeURIComponent(datasetId)}/attachments/${encodeURIComponent(attachmentId)}/download`;
+}
+
+/**
+ * Phase 7 — National Dashboard & Analytics Overview
+ */
+export async function getAnalyticsOverview(
+  query?: AnalyticsQuery,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<AnalyticsOverviewDto>> {
+  const searchParams = new URLSearchParams();
+  if (query?.regionId) searchParams.set('regionId', query.regionId);
+  if (query?.periodStart) searchParams.set('periodStart', query.periodStart);
+  if (query?.periodEnd) searchParams.set('periodEnd', query.periodEnd);
+  if (query?.sampleFlag !== undefined) searchParams.set('sampleFlag', String(query.sampleFlag));
+  const queryString = searchParams.toString();
+  return fetchApi<AnalyticsOverviewDto>(
+    `/api/v1/analytics/overview${queryString ? `?${queryString}` : ''}`,
+    options,
+  );
 }

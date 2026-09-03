@@ -10,6 +10,7 @@ import { resourcesRouter } from './resources.js';
 import { devRouter } from './dev.js';
 import { evidenceRouter } from './evidence.js';
 import { datasetsRouter } from './datasets.js';
+import { analyticsRouter } from './analytics.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
@@ -27,6 +28,9 @@ v1Router.use('/research', evidenceRouter);
 
 // Mount Phase 6 Dataset Catalog and Storage router
 v1Router.use('/datasets', datasetsRouter);
+
+// Mount Phase 7 National Dashboard and Analytics Overview router
+v1Router.use('/analytics', analyticsRouter);
 
 // Mount foundational domain routers
 v1Router.use('/regions', regionsRouter);

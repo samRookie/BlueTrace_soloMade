@@ -69,6 +69,14 @@ By connecting multi-source spatial observation data, empirical field measurement
 - Enforced access policies (`OPEN`, `CONTROLLED`, `REQUEST_REQUIRED`, `RESTRICTED`) with institutional role evaluation and audit logging.
 - Spatial and temporal coverage metadata, GIS layer references, file attachments with SHA-256 integrity checks, and direct integration with the Evidence Graph.
 
+### 8. National Dashboard & Analytics Overview (Phase 7)
+
+- Evidence-backed aggregation and decision-support surface summarizing National Snapshot, Evidence Activity, Geospatial Intelligence, Policy Intelligence, Implementation, and Blue Carbon metrics.
+- All 24 metrics derived dynamically via PostgreSQL queries with zero synthetic or hardcoded numbers.
+- Geographic jurisdiction (`regionId`) and reporting cycle (`periodStart`/`periodEnd`) contextual filtering.
+- Pre-aggregation access filtering ensuring sensitive or restricted counts are never leaked to unauthorized personas.
+- Visual prototype data disclaimers and direct interactive navigation to canonical evidence and dataset modules.
+
 ---
 
 ## The Relational Evidence Graph Architecture
