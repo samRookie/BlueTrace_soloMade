@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { defaultRegionController } from '../../controllers/regionController.js';
+import { defaultGisController } from '../../controllers/gisController.js';
 import { validateRequest } from '../../middleware/validate.js';
 import { regionFilterSchema, regionParamsSchema } from '@sih26019/validation';
 
@@ -24,3 +25,10 @@ regionsRouter.get(
   validateRequest({ params: regionParamsSchema }),
   defaultRegionController.getRegionById,
 );
+
+/**
+ * GET /api/v1/regions/:id/context
+ * Returns unified Regional Context connecting region to GIS, evidence, datasets,
+ * policies, projects, indicators, disputes, and blue carbon summary.
+ */
+regionsRouter.get('/:id/context', defaultGisController.getRegionalContext);

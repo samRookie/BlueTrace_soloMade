@@ -55,6 +55,7 @@ describe('Phase 2 PostgreSQL Evidence Graph & Persistence Layer', () => {
       expect(counts.policies).toBe(0);
       expect(counts.indicators).toBe(0);
       expect(counts.gisLayers).toBe(0);
+      expect(counts.gisFeatures).toBe(0);
       expect(counts.projects).toBe(0);
       expect(counts.innovationOpportunities).toBe(0);
       expect(counts.blueCarbonProjects).toBe(0);
@@ -79,7 +80,8 @@ describe('Phase 2 PostgreSQL Evidence Graph & Persistence Layer', () => {
       expect(counts.workspaces).toBe(1);
       expect(counts.policies).toBe(1);
       expect(counts.indicators).toBe(1);
-      expect(counts.gisLayers).toBe(1);
+      expect(counts.gisLayers).toBe(5);
+      expect(counts.gisFeatures).toBe(7);
       expect(counts.projects).toBe(1);
       expect(counts.innovationOpportunities).toBe(1);
       expect(counts.blueCarbonProjects).toBe(1);
@@ -198,7 +200,7 @@ describe('Phase 2 PostgreSQL Evidence Graph & Persistence Layer', () => {
       expect(region?.name).toBe('Coringa Mangrove Estuarine Zone');
       expect(region?.projects.length).toBe(1);
       expect(region?.policies.length).toBe(1);
-      expect(region?.gisLayers.length).toBe(1);
+      expect(region?.gisLayers.length).toBe(5);
 
       const projectWithGraph = await testDb.query.projects.findFirst({
         where: eq(schema.projects.id, 'SAMPLE-PROJ-001'),

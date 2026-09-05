@@ -10,11 +10,12 @@ import { PermissionDenied } from './components/PermissionDenied.js';
 import { EvidenceExplorer } from './components/EvidenceExplorer.js';
 import { DatasetCatalog } from './components/DatasetCatalog.js';
 import { NationalDashboard } from './components/NationalDashboard.js';
+import { GisExplorer } from './components/GisExplorer.js';
 import { getRoleLabel } from './utils/presenters.js';
 import { getWorkspaces, getAuditEvents } from './api/client.js';
 import './App.css';
 
-type Tab = 'overview' | 'datasets' | 'evidence' | 'workspaces' | 'audit' | 'demo';
+type Tab = 'overview' | 'datasets' | 'evidence' | 'gis' | 'workspaces' | 'audit' | 'demo';
 
 const MainApp: React.FC = () => {
   const { user } = useAuth();
@@ -187,6 +188,21 @@ const MainApp: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('gis')}
+              style={{
+                padding: '0.6rem 1.2rem',
+                border: 'none',
+                borderBottom: activeTab === 'gis' ? '2px solid #0284c7' : '2px solid transparent',
+                background: 'none',
+                fontWeight: activeTab === 'gis' ? 600 : 500,
+                color: activeTab === 'gis' ? '#0284c7' : '#64748b',
+                cursor: 'pointer',
+              }}
+            >
+              🗺️ GIS Explorer
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('workspaces')}
               style={{
                 padding: '0.6rem 1.2rem',
@@ -241,6 +257,8 @@ const MainApp: React.FC = () => {
           {activeTab === 'datasets' && <DatasetCatalog />}
 
           {activeTab === 'evidence' && <EvidenceExplorer />}
+
+          {activeTab === 'gis' && <GisExplorer onNavigateTab={(tab) => setActiveTab(tab)} />}
 
           {activeTab === 'workspaces' && (
             <div

@@ -15,6 +15,7 @@ export interface EntityCounts {
   policies: number;
   indicators: number;
   gisLayers: number;
+  gisFeatures: number;
   projects: number;
   innovationOpportunities: number;
   blueCarbonProjects: number;
@@ -89,6 +90,7 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     workspaceMembershipsCount,
     evidenceAttachmentsCount,
     datasetMetadataCount,
+    gisFeaturesCount,
   ] = await Promise.all([
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.sources),
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.regions),
@@ -125,6 +127,7 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
       .select({ count: sql<number>`cast(count(*) as integer)` })
       .from(schema.evidenceAttachments),
     database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.datasetMetadata),
+    database.select({ count: sql<number>`cast(count(*) as integer)` }).from(schema.gisFeatures),
   ]);
 
   return {
@@ -134,6 +137,7 @@ export async function getEntityCounts(database: AppDatabase = db): Promise<Entit
     policies: policiesCount[0]?.count ?? 0,
     indicators: indicatorsCount[0]?.count ?? 0,
     gisLayers: gisLayersCount[0]?.count ?? 0,
+    gisFeatures: gisFeaturesCount[0]?.count ?? 0,
     projects: projectsCount[0]?.count ?? 0,
     innovationOpportunities: innovationOpportunitiesCount[0]?.count ?? 0,
     blueCarbonProjects: blueCarbonProjectsCount[0]?.count ?? 0,

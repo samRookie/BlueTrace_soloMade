@@ -120,12 +120,17 @@ export async function seedDatabase(database: AppDatabase = db): Promise<void> {
         target: schema.gisLayers.id,
         set: {
           name: item.name,
+          description: item.description,
           layerType: item.layerType,
+          geometryType: item.geometryType,
           regionId: item.regionId,
           sourceId: item.sourceId,
+          period: item.period,
+          coverage: item.coverage,
           visibility: item.visibility,
           status: item.status,
           sampleFlag: item.sampleFlag,
+          legend: item.legend,
           updatedAt: new Date(),
         },
       });
@@ -413,6 +418,34 @@ export async function seedDatabase(database: AppDatabase = db): Promise<void> {
   console.log(
     `[Seed Engine] Seeded ${coastalMangroveSeedData.datasetMetadata.length} dataset metadata records.`,
   );
+
+  // 20. GIS Features (Phase 8 GIS Explorer & Regional Context)
+  for (const item of coastalMangroveSeedData.gisFeatures) {
+    await database
+      .insert(schema.gisFeatures)
+      .values(item)
+      .onConflictDoUpdate({
+        target: schema.gisFeatures.id,
+        set: {
+          layerId: item.layerId,
+          regionId: item.regionId,
+          name: item.name,
+          geometryType: item.geometryType,
+          geometry: item.geometry,
+          properties: item.properties,
+          evidenceId: item.evidenceId,
+          datasetId: item.datasetId,
+          projectId: item.projectId,
+          policyId: item.policyId,
+          indicatorId: item.indicatorId,
+          disputeId: item.disputeId,
+          visibility: item.visibility,
+          sampleFlag: item.sampleFlag,
+          updatedAt: new Date(),
+        },
+      });
+  }
+  console.log(`[Seed Engine] Seeded ${coastalMangroveSeedData.gisFeatures.length} GIS features.`);
 
   console.log('[Seed Engine] Deterministic seed execution completed successfully.');
 }

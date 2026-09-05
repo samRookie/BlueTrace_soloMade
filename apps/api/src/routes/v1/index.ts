@@ -11,6 +11,7 @@ import { devRouter } from './dev.js';
 import { evidenceRouter } from './evidence.js';
 import { datasetsRouter } from './datasets.js';
 import { analyticsRouter } from './analytics.js';
+import { gisRouter } from './gis.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json') as { version: string };
@@ -31,6 +32,9 @@ v1Router.use('/datasets', datasetsRouter);
 
 // Mount Phase 7 National Dashboard and Analytics Overview router
 v1Router.use('/analytics', analyticsRouter);
+
+// Mount Phase 8 GIS Explorer and Regional Context router
+v1Router.use('/gis', gisRouter);
 
 // Mount foundational domain routers
 v1Router.use('/regions', regionsRouter);

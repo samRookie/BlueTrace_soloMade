@@ -188,3 +188,20 @@ Retrieves authoritative, database-backed aggregations across all 6 platform sect
   }
 }
 ```
+
+---
+
+### 3.10 GIS Explorer & Regional Context (Phase 8)
+
+#### Endpoints
+
+- `GET /api/v1/gis/layers`: List accessible GIS layers with feature counts.
+- `GET /api/v1/gis/layers/:id`: Retrieve single layer metadata and bounding box.
+- `GET /api/v1/gis/layers/:id/features`: List spatial features for a layer with pagination and bbox filter.
+- `GET /api/v1/gis/features/:id`: Inspect single feature attributes and connected governance entities.
+- `GET /api/v1/regions/:id/context`: Synthesize cross-module regional intelligence (evidence, datasets, policies, projects, indicators, disputes, blue carbon).
+
+#### Security & Masking
+
+- Layers with `visibility: 'INTERNAL'` (e.g. dispute buffer zones) are restricted to authenticated authorized roles.
+- Coordinates for sensitive mediation features are generalized/masked for unauthenticated viewers (`coordinates: []`, `coordinatesGeneralized: true`).

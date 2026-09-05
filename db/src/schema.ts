@@ -162,25 +162,86 @@ export const gisLayers = pgTable(
   {
     id: varchar('id', { length: 64 }).primaryKey(),
     name: text('name').notNull(),
+    description: text('description'),
     layerType: varchar('layer_type', { length: 64 }).notNull(),
+    geometryType: varchar('geometry_type', { length: 32 }).notNull().default('Polygon'),
     regionId: varchar('region_id', { length: 64 })
       .notNull()
       .references(() => regions.id, { onDelete: 'restrict' }),
     sourceId: varchar('source_id', { length: 64 }).references(() => sources.id, {
       onDelete: 'set null',
     }),
+    period: varchar('period', { length: 64 }),
+    coverage: text('coverage'),
     visibility: varchar('visibility', { length: 32 })
       .$type<Visibility>()
       .notNull()
       .default('PUBLIC'),
     status: varchar('status', { length: 32 }).notNull().default('PUBLISHED'),
     sampleFlag: boolean('sample_flag').notNull().default(true),
+    legend: jsonb('legend').$type<{
+      color: string;
+      strokeColor?: string;
+      fillOpacity?: number;
+      symbol: string;
+    }>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index('gis_layers_region_idx').on(table.regionId),
     index('gis_layers_type_idx').on(table.layerType),
+    index('gis_layers_visibility_idx').on(table.visibility),
+  ],
+);
+
+/**
+ * 6b. GIS Features Table
+ */
+export const gisFeatures = pgTable(
+  'gis_features',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    layerId: varchar('layer_id', { length: 64 })
+      .notNull()
+      .references(() => gisLayers.id, { onDelete: 'cascade' }),
+    regionId: varchar('region_id', { length: 64 })
+      .notNull()
+      .references(() => regions.id, { onDelete: 'restrict' }),
+    name: text('name').notNull(),
+    geometryType: varchar('geometry_type', { length: 32 }).notNull(),
+    geometry: jsonb('geometry').notNull(),
+    properties: jsonb('properties').notNull().default('{}'),
+    evidenceId: varchar('evidence_id', { length: 64 }).references(() => evidenceItems.id, {
+      onDelete: 'set null',
+    }),
+    datasetId: varchar('dataset_id', { length: 64 }).references(() => datasetMetadata.id, {
+      onDelete: 'set null',
+    }),
+    projectId: varchar('project_id', { length: 64 }).references(() => projects.id, {
+      onDelete: 'set null',
+    }),
+    policyId: varchar('policy_id', { length: 64 }).references(() => policies.id, {
+      onDelete: 'set null',
+    }),
+    indicatorId: varchar('indicator_id', { length: 64 }).references(() => indicators.id, {
+      onDelete: 'set null',
+    }),
+    disputeId: varchar('dispute_id', { length: 64 }).references(() => disputes.id, {
+      onDelete: 'set null',
+    }),
+    visibility: varchar('visibility', { length: 32 })
+      .$type<Visibility>()
+      .notNull()
+      .default('PUBLIC'),
+    sampleFlag: boolean('sample_flag').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('gis_features_layer_idx').on(table.layerId),
+    index('gis_features_region_idx').on(table.regionId),
+    index('gis_features_visibility_idx').on(table.visibility),
   ],
 );
 
@@ -765,7 +826,7 @@ export const indicatorsRelations = relations(indicators, ({ one }) => ({
   }),
 }));
 
-export const gisLayersRelations = relations(gisLayers, ({ one }) => ({
+export const gisLayersRelations = relations(gisLayers, ({ one, many }) => ({
   region: one(regions, {
     fields: [gisLayers.regionId],
     references: [regions.id],
@@ -773,6 +834,42 @@ export const gisLayersRelations = relations(gisLayers, ({ one }) => ({
   source: one(sources, {
     fields: [gisLayers.sourceId],
     references: [sources.id],
+  }),
+  features: many(gisFeatures),
+}));
+
+export const gisFeaturesRelations = relations(gisFeatures, ({ one }) => ({
+  layer: one(gisLayers, {
+    fields: [gisFeatures.layerId],
+    references: [gisLayers.id],
+  }),
+  region: one(regions, {
+    fields: [gisFeatures.regionId],
+    references: [regions.id],
+  }),
+  evidence: one(evidenceItems, {
+    fields: [gisFeatures.evidenceId],
+    references: [evidenceItems.id],
+  }),
+  dataset: one(datasetMetadata, {
+    fields: [gisFeatures.datasetId],
+    references: [datasetMetadata.id],
+  }),
+  project: one(projects, {
+    fields: [gisFeatures.projectId],
+    references: [projects.id],
+  }),
+  policy: one(policies, {
+    fields: [gisFeatures.policyId],
+    references: [policies.id],
+  }),
+  indicator: one(indicators, {
+    fields: [gisFeatures.indicatorId],
+    references: [indicators.id],
+  }),
+  dispute: one(disputes, {
+    fields: [gisFeatures.disputeId],
+    references: [disputes.id],
   }),
 }));
 
@@ -844,6 +941,9 @@ export type InsertIndicatorRow = typeof indicators.$inferInsert;
 
 export type GisLayerRow = typeof gisLayers.$inferSelect;
 export type InsertGisLayerRow = typeof gisLayers.$inferInsert;
+
+export type GisFeatureRow = typeof gisFeatures.$inferSelect;
+export type InsertGisFeatureRow = typeof gisFeatures.$inferInsert;
 
 export type ProjectRow = typeof projects.$inferSelect;
 export type InsertProjectRow = typeof projects.$inferInsert;

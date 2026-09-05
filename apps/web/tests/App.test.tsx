@@ -37,6 +37,7 @@ describe('Web Application - Direct Access Boot & Render', () => {
       expect(screen.getByRole('button', { name: /Platform Overview/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Dataset Catalog/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Knowledge & Evidence/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /GIS Explorer/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /My Workspaces/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Security Audit Trail/i })).toBeInTheDocument();
     });

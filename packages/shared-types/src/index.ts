@@ -16,4 +16,5 @@ export * from './health.js';
 export * from './evidence.js';
 export * from './dataset.js';
 export * from './analytics.js';
+export * from './gis.js';
 export * from './providers/index.js';

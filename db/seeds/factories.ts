@@ -5,6 +5,7 @@ import type {
   InsertPolicyRow,
   InsertIndicatorRow,
   InsertGisLayerRow,
+  InsertGisFeatureRow,
   InsertProjectRow,
   InsertInnovationOpportunityRow,
   InsertBlueCarbonProjectRow,
@@ -106,6 +107,26 @@ export function createGisLayer(
   return {
     visibility: 'PUBLIC',
     status: 'PUBLISHED',
+    sampleFlag: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+export function createGisFeature(
+  overrides: Partial<InsertGisFeatureRow> & {
+    id: string;
+    layerId: string;
+    regionId: string;
+    name: string;
+    geometryType: string;
+    geometry: unknown;
+  },
+): InsertGisFeatureRow {
+  return {
+    properties: {},
+    visibility: 'PUBLIC',
     sampleFlag: true,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),

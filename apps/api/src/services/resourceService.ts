@@ -52,6 +52,7 @@ export class ResourceService {
       policies: 0,
       indicators: 0,
       gisLayers: 0,
+      gisFeatures: 0,
       projects: 0,
       innovationOpportunities: 0,
       blueCarbonProjects: 0,

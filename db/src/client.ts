@@ -94,6 +94,9 @@ for (const item of coastalMangroveSeedData.evidenceAttachments) {
 for (const item of coastalMangroveSeedData.datasetMetadata) {
   await db.insert(schema.datasetMetadata).values(item).onConflictDoNothing();
 }
+for (const item of coastalMangroveSeedData.gisFeatures) {
+  await db.insert(schema.gisFeatures).values(item).onConflictDoNothing();
+}
 
 // Backward-compatible pool lifecycle interface
 export const pool = {

@@ -77,6 +77,14 @@ By connecting multi-source spatial observation data, empirical field measurement
 - Pre-aggregation access filtering ensuring sensitive or restricted counts are never leaked to unauthorized personas.
 - Visual prototype data disclaimers and direct interactive navigation to canonical evidence and dataset modules.
 
+### 9. GIS Explorer & Regional Context (Phase 8)
+
+- Spatial index and geographic exploration layer connecting regions, GIS layers, and spatial features to canonical platform entities (evidence, datasets, policies, projects, indicators, disputes, and blue carbon models).
+- Pure native SVG GeoJSON vector renderer with zero external mapping libraries, zero API keys, and instant offline loading.
+- Accessible tabular fallback with search/filter for screen readers, low bandwidth, and simulated mapping provider outages.
+- Pre-aggregation layer authorization and coordinate masking for sensitive mediation/dispute buffer zones.
+- Direct cross-module navigation linking spatial polygons and points to the Knowledge Repository and Dataset Catalog.
+
 ---
 
 ## The Relational Evidence Graph Architecture

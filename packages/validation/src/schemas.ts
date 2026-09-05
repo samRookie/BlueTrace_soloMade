@@ -4,3 +4,4 @@ export * from './schemas/auth.js';
 export * from './schemas/evidence.js';
 export * from './schemas/dataset.js';
 export * from './schemas/analytics.js';
+export * from './schemas/gis.js';

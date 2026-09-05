@@ -24,6 +24,13 @@ import type {
   UpdateDatasetRequest,
   AnalyticsOverviewDto,
   AnalyticsQuery,
+  GisLayerDto,
+  GisLayerDetailDto,
+  GisFeatureDto,
+  GisFeatureDetailDto,
+  RegionalContextDto,
+  GisLayerFilterQuery,
+  GisFeatureFilterQuery,
 } from '@sih26019/shared-types';
 
 export interface ApiClientOptions extends RequestInit {
@@ -448,6 +455,65 @@ export async function getAnalyticsOverview(
   const queryString = searchParams.toString();
   return fetchApi<AnalyticsOverviewDto>(
     `/api/v1/analytics/overview${queryString ? `?${queryString}` : ''}`,
+    options,
+  );
+}
+
+/**
+ * Phase 8 — GIS Explorer & Regional Context
+ */
+export async function getGisLayers(
+  query?: GisLayerFilterQuery,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<GisLayerDto[]>> {
+  const searchParams = new URLSearchParams();
+  if (query?.regionId) searchParams.set('regionId', query.regionId);
+  if (query?.layerType) searchParams.set('layerType', query.layerType);
+  if (query?.sampleFlag !== undefined) searchParams.set('sampleFlag', String(query.sampleFlag));
+  const queryString = searchParams.toString();
+  return fetchApi<GisLayerDto[]>(
+    `/api/v1/gis/layers${queryString ? `?${queryString}` : ''}`,
+    options,
+  );
+}
+
+export async function getGisLayerById(
+  id: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<GisLayerDetailDto>> {
+  return fetchApi<GisLayerDetailDto>(`/api/v1/gis/layers/${encodeURIComponent(id)}`, options);
+}
+
+export async function getGisFeatures(
+  layerId: string,
+  query?: GisFeatureFilterQuery,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<PaginatedData<GisFeatureDto>>> {
+  const searchParams = new URLSearchParams();
+  if (query?.regionId) searchParams.set('regionId', query.regionId);
+  if (query?.bbox) searchParams.set('bbox', query.bbox);
+  if (query?.page) searchParams.set('page', String(query.page));
+  if (query?.limit) searchParams.set('limit', String(query.limit));
+  const queryString = searchParams.toString();
+  return fetchApi<PaginatedData<GisFeatureDto>>(
+    `/api/v1/gis/layers/${encodeURIComponent(layerId)}/features${queryString ? `?${queryString}` : ''}`,
+    options,
+  );
+}
+
+export async function getGisFeatureById(
+  id: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<GisFeatureDetailDto>> {
+  return fetchApi<GisFeatureDetailDto>(`/api/v1/gis/features/${encodeURIComponent(id)}`, options);
+}
+
+export async function getRegionContext(
+  regionId: string,
+  options?: ApiClientOptions,
+): Promise<ApiResponse<RegionalContextDto>> {
+  return fetchApi<RegionalContextDto>(
+    `/api/v1/regions/${encodeURIComponent(regionId)}/context`,
     options,
   );
 }

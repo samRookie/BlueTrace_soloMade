@@ -9,7 +9,7 @@ import { MetricCard } from './MetricCard.js';
 
 interface NationalDashboardProps {
   onNavigateTab: (
-    tab: 'overview' | 'datasets' | 'evidence' | 'workspaces' | 'audit' | 'demo',
+    tab: 'overview' | 'datasets' | 'evidence' | 'gis' | 'workspaces' | 'audit' | 'demo',
   ) => void;
 }
 
@@ -64,6 +64,8 @@ export const NationalDashboard: React.FC<NationalDashboardProps> = ({ onNavigate
       onNavigateTab('evidence');
     } else if (path.startsWith('/workspaces')) {
       onNavigateTab('workspaces');
+    } else if (path.startsWith('/gis')) {
+      onNavigateTab('gis');
     }
   };
 
